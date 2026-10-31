@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include kodafreight *.css
+recursive-include kodafreight *.csv
+recursive-include kodafreight *.html
+recursive-include kodafreight *.ico
+recursive-include kodafreight *.js
+recursive-include kodafreight *.json
+recursive-include kodafreight *.md
+recursive-include kodafreight *.png
+recursive-include kodafreight *.py
+recursive-include kodafreight *.svg
+recursive-include kodafreight *.txt
+recursive-exclude kodafreight *.pyc

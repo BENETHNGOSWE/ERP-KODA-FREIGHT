@@ -1,0 +1,194 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-08-28 09:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_provider",
+  "default_provider",
+  "default_country_code",
+  "national_number_length",
+  "cb_provider",
+  "enforce_credits",
+  "allow_negative_balance",
+  "charge_per_part",
+  "sb_queue",
+  "queue_batch_size",
+  "max_retries",
+  "retry_backoff_minutes",
+  "cb_queue",
+  "request_timeout",
+  "verify_ssl",
+  "dispatch_enabled",
+  "sb_security",
+  "webhook_secret",
+  "webhook_ip_allowlist",
+  "cb_security",
+  "api_rate_limit_per_minute",
+  "enable_audit_log",
+  "low_balance_threshold"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_provider",
+   "fieldtype": "Section Break",
+   "label": "SMS Delivery"
+  },
+  {
+   "fieldname": "default_provider",
+   "fieldtype": "Link",
+   "label": "Default SMS Provider",
+   "options": "Kodafreight SMS Provider"
+  },
+  {
+   "default": "255",
+   "description": "Digits only. Used to normalise local numbers into MSISDN format.",
+   "fieldname": "default_country_code",
+   "fieldtype": "Data",
+   "label": "Default Country Code"
+  },
+  {
+   "default": 9,
+   "description": "Digits after the country code (Tanzania: 9, e.g. 745788788).",
+   "fieldname": "national_number_length",
+   "fieldtype": "Int",
+   "label": "National Number Length"
+  },
+  {
+   "fieldname": "cb_provider",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "enforce_credits",
+   "fieldtype": "Check",
+   "label": "Enforce Credit Limits"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_negative_balance",
+   "fieldtype": "Check",
+   "label": "Allow Negative Balance (global default)"
+  },
+  {
+   "default": "1",
+   "fieldname": "charge_per_part",
+   "fieldtype": "Check",
+   "label": "Charge One Credit Per SMS Part"
+  },
+  {
+   "fieldname": "sb_queue",
+   "fieldtype": "Section Break",
+   "label": "Queue & Retry"
+  },
+  {
+   "default": 20,
+   "description": "Messages picked per scheduler run (Laravel parity: 20).",
+   "fieldname": "queue_batch_size",
+   "fieldtype": "Int",
+   "label": "Queue Batch Size"
+  },
+  {
+   "default": 3,
+   "fieldname": "max_retries",
+   "fieldtype": "Int",
+   "label": "Max Retries Per Message"
+  },
+  {
+   "default": 5,
+   "fieldname": "retry_backoff_minutes",
+   "fieldtype": "Int",
+   "label": "Retry Backoff (minutes)"
+  },
+  {
+   "fieldname": "cb_queue",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": 30,
+   "fieldname": "request_timeout",
+   "fieldtype": "Int",
+   "label": "Provider Request Timeout (seconds)"
+  },
+  {
+   "default": "1",
+   "fieldname": "verify_ssl",
+   "fieldtype": "Check",
+   "label": "Verify Provider SSL Certificate"
+  },
+  {
+   "default": "1",
+   "fieldname": "dispatch_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Automatic Dispatch"
+  },
+  {
+   "fieldname": "sb_security",
+   "fieldtype": "Section Break",
+   "label": "Security"
+  },
+  {
+   "description": "Callbacks must present this value in the X-Kodafreight-Signature header.",
+   "fieldname": "webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook Shared Secret"
+  },
+  {
+   "description": "Comma separated. Empty = allow any IP (signature is still required).",
+   "fieldname": "webhook_ip_allowlist",
+   "fieldtype": "Small Text",
+   "label": "Webhook IP Allowlist"
+  },
+  {
+   "fieldname": "cb_security",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": 60,
+   "fieldname": "api_rate_limit_per_minute",
+   "fieldtype": "Int",
+   "label": "API Rate Limit (requests/minute/user)"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_audit_log",
+   "fieldtype": "Check",
+   "label": "Enable Audit Log"
+  },
+  {
+   "default": 100,
+   "fieldname": "low_balance_threshold",
+   "fieldtype": "Int",
+   "label": "Default Low Balance Threshold"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-28 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Kodafreight",
+ "name": "Kodafreight Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Platform Admin",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

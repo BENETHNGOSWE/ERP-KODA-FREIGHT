@@ -1,0 +1,79 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-08-28 09:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "contact",
+  "recipient_name",
+  "phone",
+  "status",
+  "message",
+  "error"
+ ],
+ "fields": [
+  {
+   "columns": 3,
+   "fieldname": "contact",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Contact",
+   "options": "Kodafreight Contact"
+  },
+  {
+   "columns": 2,
+   "fieldname": "recipient_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name"
+  },
+  {
+   "columns": 2,
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Phone",
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Pending\nQueued\nSent\nDelivered\nFailed\nSkipped",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "message",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "SMS Message",
+   "options": "Kodafreight SMS Message",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Small Text",
+   "label": "Error",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-28 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Kodafreight",
+ "name": "Kodafreight Campaign Recipient",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

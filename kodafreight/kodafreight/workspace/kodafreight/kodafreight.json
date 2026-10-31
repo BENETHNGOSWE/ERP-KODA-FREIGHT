@@ -1,0 +1,316 @@
+{
+ "charts": [
+  {
+   "chart_name": "Kodafreight SMS Volume",
+   "label": "SMS Volume (last 30 days)"
+  }
+ ],
+ "content": "[{\"id\":\"kf_hdr_ops\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">SMS Operations</span>\",\"col\":12}},{\"id\":\"kf_card_sent\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Kodafreight Messages Sent\",\"col\":3}},{\"id\":\"kf_card_delivered\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Kodafreight Messages Delivered\",\"col\":3}},{\"id\":\"kf_card_failed\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Kodafreight Messages Failed\",\"col\":3}},{\"id\":\"kf_card_pending\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Kodafreight Messages Pending\",\"col\":3}},{\"id\":\"kf_chart\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Kodafreight SMS Volume\",\"col\":12}},{\"id\":\"kf_sc_sms\",\"type\":\"card\",\"data\":{\"card_name\":\"SMS\",\"col\":4}},{\"id\":\"kf_sc_clients\",\"type\":\"card\",\"data\":{\"card_name\":\"Clients\",\"col\":4}},{\"id\":\"kf_sc_credits\",\"type\":\"card\",\"data\":{\"card_name\":\"Credits\",\"col\":4}},{\"id\":\"kf_sc_contacts\",\"type\":\"card\",\"data\":{\"card_name\":\"Contacts\",\"col\":4}},{\"id\":\"kf_sc_config\",\"type\":\"card\",\"data\":{\"card_name\":\"Configuration\",\"col\":4}},{\"id\":\"kf_sc_reports\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
+ "creation": "2026-08-28 09:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "message",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Kodafreight",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "SMS",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "SMS Message",
+   "link_count": 0,
+   "link_to": "Kodafreight SMS Message",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "SMS Campaign",
+   "link_count": 0,
+   "link_to": "Kodafreight SMS Campaign",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Delivery Log",
+   "link_count": 0,
+   "link_to": "Kodafreight SMS Delivery Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "SMS Delivery Report",
+   "link_count": 0,
+   "link_to": "Kodafreight SMS Delivery Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Clients",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Client",
+   "link_count": 0,
+   "link_to": "Kodafreight Client",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Client User",
+   "link_count": 0,
+   "link_to": "Kodafreight Client User",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Client Type",
+   "link_count": 0,
+   "link_to": "Kodafreight Client Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Subscription",
+   "link_count": 0,
+   "link_to": "Kodafreight Subscription",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Credits",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "SMS Credit Account",
+   "link_count": 0,
+   "link_to": "Kodafreight SMS Credit Account",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "SMS Credit Transaction",
+   "link_count": 0,
+   "link_to": "Kodafreight SMS Credit Transaction",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Client Credit Statement",
+   "link_count": 0,
+   "link_to": "Kodafreight Client Credit Statement",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Contacts",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Contact",
+   "link_count": 0,
+   "link_to": "Kodafreight Contact",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Contact Category",
+   "link_count": 0,
+   "link_to": "Kodafreight Contact Category",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Configuration",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sender Name",
+   "link_count": 0,
+   "link_to": "Kodafreight Sender Name",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "SMS Number",
+   "link_count": 0,
+   "link_to": "Kodafreight SMS Number",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "SMS Provider",
+   "link_count": 0,
+   "link_to": "Kodafreight SMS Provider",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Kodafreight Settings",
+   "link_count": 0,
+   "link_to": "Kodafreight Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "SMS Usage Summary",
+   "link_count": 0,
+   "link_to": "Kodafreight SMS Usage Summary",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "SMS Delivery Report",
+   "link_count": 0,
+   "link_to": "Kodafreight SMS Delivery Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Audit Log",
+   "link_count": 0,
+   "link_to": "Kodafreight Audit Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-08-28 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Kodafreight",
+ "name": "Kodafreight",
+ "number_cards": [
+  {"label": "Messages Sent", "number_card_name": "Kodafreight Messages Sent"},
+  {"label": "Messages Delivered", "number_card_name": "Kodafreight Messages Delivered"},
+  {"label": "Messages Failed", "number_card_name": "Kodafreight Messages Failed"},
+  {"label": "Messages Pending", "number_card_name": "Kodafreight Messages Pending"}
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "New",
+   "label": "Send SMS",
+   "link_to": "Kodafreight SMS Message",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "New",
+   "label": "Bulk Campaign",
+   "link_to": "Kodafreight SMS Campaign",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "SMS History",
+   "link_to": "Kodafreight SMS Message",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Clients",
+   "link_to": "Kodafreight Client",
+   "type": "DocType"
+  }
+ ],
+ "title": "Kodafreight"
+}

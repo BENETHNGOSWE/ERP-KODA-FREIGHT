@@ -1,0 +1,147 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "hash",
+ "creation": "2026-08-28 09:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sms_message",
+  "client",
+  "provider",
+  "cb_1",
+  "reported_status",
+  "provider_message_id",
+  "received_at",
+  "dedupe_key",
+  "sb_2",
+  "payload",
+  "remote_ip"
+ ],
+ "fields": [
+  {
+   "fieldname": "sms_message",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "SMS Message",
+   "options": "Kodafreight SMS Message",
+   "search_index": 1
+  },
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Client",
+   "options": "Kodafreight Client"
+  },
+  {
+   "fieldname": "provider",
+   "fieldtype": "Link",
+   "label": "Provider",
+   "options": "Kodafreight SMS Provider"
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reported_status",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Reported Status"
+  },
+  {
+   "fieldname": "provider_message_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Provider Message ID",
+   "search_index": 1
+  },
+  {
+   "fieldname": "received_at",
+   "fieldtype": "Datetime",
+   "label": "Received At",
+   "read_only": 1
+  },
+  {
+   "description": "Hash of provider message id + status; blocks duplicate callbacks.",
+   "fieldname": "dedupe_key",
+   "fieldtype": "Data",
+   "label": "Dedupe Key",
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "sb_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "payload",
+   "fieldtype": "Code",
+   "label": "Raw Payload",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remote_ip",
+   "fieldtype": "Data",
+   "label": "Remote IP",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-28 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Kodafreight",
+ "name": "Kodafreight SMS Delivery Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 0,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Platform Admin",
+   "share": 0,
+   "write": 0
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 0,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Client Admin",
+   "share": 0,
+   "write": 0
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 0,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight SMS Manager",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

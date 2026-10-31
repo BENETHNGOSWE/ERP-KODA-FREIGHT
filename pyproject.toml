@@ -1,0 +1,28 @@
+[project]
+name = "kodafreight"
+authors = [{ name = "Kodafreight", email = "support@kodafreight.local" }]
+description = "Multi-tenant SMS SaaS platform for Frappe/ERPNext v16"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    # `requests` is already part of the Frappe framework; listed for completeness.
+]
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0,<17.0.0"
+
+[tool.flit.module]
+name = "kodafreight"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "I"]
+ignore = ["E501"]

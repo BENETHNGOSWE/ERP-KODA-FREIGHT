@@ -1,0 +1,182 @@
+<div class="kf-dashboard">
+	<div class="kf-topbar">
+		<div class="kf-brand">
+			<div class="kf-logo">KF</div>
+			<div>
+				<div class="kf-brand-title">Kodafreight</div>
+				<div class="kf-brand-sub">SMS Platform</div>
+			</div>
+		</div>
+		<div class="kf-topbar-right">
+			<span class="kf-pill kf-pill-{{ 'green' if data.client.status == 'Active' else 'red' }}">
+				{{ data.client.status }}
+			</span>
+			<span class="kf-user">{{ full_name }}</span>
+			<span class="kf-avatar">{{ full_name[0] | upper }}</span>
+		</div>
+	</div>
+
+	<div class="kf-body">
+		<aside class="kf-sidebar">
+			<div class="kf-side-label">Main</div>
+			<a class="kf-nav kf-nav-active" href="/kodafreight"><span>▦</span> Dashboard</a>
+			<a class="kf-nav" href="/app/kodafreight-sms-message/new"><span>✉</span> Send SMS</a>
+			<a class="kf-nav" href="/app/kodafreight-sms-campaign/new"><span>❏</span> Bulk SMS</a>
+			<a class="kf-nav" href="/app/kodafreight-sms-message"><span>☰</span> SMS History</a>
+			<a class="kf-nav" href="/app/query-report/Kodafreight SMS Delivery Report"><span>✓</span> Delivery Reports</a>
+			<div class="kf-side-label">Contacts</div>
+			<a class="kf-nav" href="/app/kodafreight-contact"><span>👤</span> Contacts</a>
+			<a class="kf-nav" href="/app/kodafreight-contact-category"><span>🏷</span> Categories</a>
+			<div class="kf-side-label">Account</div>
+			<a class="kf-nav" href="/app/kodafreight-sms-credit-transaction"><span>◈</span> Credits</a>
+			<a class="kf-nav" href="/app/kodafreight-client-user"><span>👥</span> Staff &amp; Users</a>
+			<a class="kf-nav" href="/app/query-report/Kodafreight SMS Usage Summary"><span>📈</span> Reports</a>
+			<a class="kf-nav" href="/app/kodafreight-client/{{ data.client.name }}"><span>⚙</span> Settings</a>
+		</aside>
+
+		<main class="kf-main">
+			<div class="kf-page-head">
+				<div>
+					<h1>Welcome, {{ data.client.client_name }}</h1>
+					<p>{{ today_label }} &middot; Client ID {{ data.client.name }} &middot;
+						Default sender <strong>{{ data.client.default_sender_name or 'not assigned' }}</strong></p>
+				</div>
+				<div class="kf-actions">
+					<a class="kf-btn kf-btn-primary" href="/app/kodafreight-sms-message/new">Send SMS</a>
+					<a class="kf-btn" href="/app/kodafreight-sms-campaign/new">New Campaign</a>
+				</div>
+			</div>
+
+			{% if data.credits.remaining <= data.credits.low_balance_threshold %}
+			<div class="kf-alert">Your SMS balance is low ({{ data.credits.remaining }} credits left).
+				Contact the platform administrator to top up.</div>
+			{% endif %}
+
+			<div class="kf-cards">
+				<div class="kf-card kf-card-primary">
+					<div class="kf-card-label">SMS Credits Available</div>
+					<div class="kf-card-value">{{ "{:,}".format(data.credits.remaining) }}</div>
+					<div class="kf-progress"><span style="width: {{ used_percent }}%"></span></div>
+					<div class="kf-card-foot">{{ "{:,}".format(data.credits.used) }} used of
+						{{ "{:,}".format(data.credits.allocated) }} allocated</div>
+				</div>
+				<div class="kf-card">
+					<div class="kf-card-label">Messages Sent Today</div>
+					<div class="kf-card-value">{{ data.messages.today }}</div>
+					<div class="kf-card-foot">{{ "{:,}".format(data.messages.total) }} all time</div>
+				</div>
+				<div class="kf-card">
+					<div class="kf-card-label">Delivered</div>
+					<div class="kf-card-value kf-green">{{ "{:,}".format(data.messages.delivered) }}</div>
+					<div class="kf-card-foot">{{ success_rate }}% success rate</div>
+				</div>
+				<div class="kf-card">
+					<div class="kf-card-label">Failed / Pending</div>
+					<div class="kf-card-value"><span class="kf-red">{{ data.messages.failed }}</span>
+						<span class="kf-sep">/</span>
+						<span class="kf-amber">{{ data.messages.pending }}</span></div>
+					<div class="kf-card-foot">failed &middot; awaiting dispatch</div>
+				</div>
+			</div>
+
+			<div class="kf-grid">
+				<section class="kf-panel kf-panel-wide">
+					<div class="kf-panel-head">
+						<h2>Usage — last 7 days</h2>
+						<span class="kf-legend"><i class="kf-dot kf-dot-blue"></i>Sent
+							<i class="kf-dot kf-dot-red"></i>Failed</span>
+					</div>
+					<div class="kf-chart">
+						{% for point in data.trend %}
+						<div class="kf-bar-group">
+							<div class="kf-bars">
+								<div class="kf-bar kf-bar-sent" style="height: {{ point.sent_h }}px" title="{{ point.sent }} sent"></div>
+								<div class="kf-bar kf-bar-failed" style="height: {{ point.failed_h }}px" title="{{ point.failed }} failed"></div>
+							</div>
+							<div class="kf-bar-label">{{ point.label }}</div>
+						</div>
+						{% endfor %}
+					</div>
+				</section>
+
+				<section class="kf-panel">
+					<div class="kf-panel-head"><h2>Account</h2></div>
+					<ul class="kf-list">
+						<li><span>Client</span><strong>{{ data.client.client_name }}</strong></li>
+						<li><span>Status</span><strong>{{ data.client.status }}</strong></li>
+						<li><span>Email</span><strong>{{ data.client.email }}</strong></li>
+						<li><span>Phone</span><strong>{{ data.client.phone }}</strong></li>
+						<li><span>Contacts</span><strong>{{ data.contacts }}</strong></li>
+						<li><span>Categories</span><strong>{{ data.categories }}</strong></li>
+					</ul>
+					<div class="kf-panel-head"><h2>Sender Names</h2></div>
+					<div class="kf-chips">
+						{% for sender in data.senders %}
+						<span class="kf-chip {% if sender.is_default %}kf-chip-default{% endif %}">
+							{{ sender.sender_name }}{% if sender.is_default %} ★{% endif %}</span>
+						{% else %}
+						<span class="kf-muted">No sender name assigned yet.</span>
+						{% endfor %}
+					</div>
+					{% if data.numbers %}
+					<div class="kf-panel-head"><h2>Assigned Numbers</h2></div>
+					<div class="kf-chips">
+						{% for number in data.numbers %}
+						<span class="kf-chip">{{ number.number }} · {{ number.status }}</span>
+						{% endfor %}
+					</div>
+					{% endif %}
+				</section>
+			</div>
+
+			<section class="kf-panel">
+				<div class="kf-panel-head">
+					<h2>Recent Messages</h2>
+					<a class="kf-link" href="/app/kodafreight-sms-message">View all</a>
+				</div>
+				<table class="kf-table">
+					<thead>
+						<tr><th>Recipient</th><th>Message</th><th>Sender</th><th>Parts</th>
+							<th>Status</th><th>When</th></tr>
+					</thead>
+					<tbody>
+						{% for row in data.recent_messages %}
+						<tr>
+							<td class="kf-mono">{{ row.recipient }}</td>
+							<td class="kf-truncate">{{ row.message }}</td>
+							<td>{{ row.sender_name }}</td>
+							<td>{{ row.parts }}</td>
+							<td><span class="kf-status kf-status-{{ row.status | lower }}">{{ row.status }}</span></td>
+							<td class="kf-muted">{{ row.when }}</td>
+						</tr>
+						{% else %}
+						<tr><td colspan="6" class="kf-muted">No messages yet.</td></tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</section>
+
+			{% if data.campaigns %}
+			<section class="kf-panel">
+				<div class="kf-panel-head"><h2>Recent Campaigns</h2>
+					<a class="kf-link" href="/app/kodafreight-sms-campaign">View all</a></div>
+				<table class="kf-table">
+					<thead><tr><th>Campaign</th><th>Recipients</th><th>Sent</th><th>Failed</th>
+						<th>Status</th></tr></thead>
+					<tbody>
+						{% for row in data.campaigns %}
+						<tr>
+							<td>{{ row.title }}</td>
+							<td>{{ row.total_recipients }}</td>
+							<td class="kf-green">{{ row.sent_count }}</td>
+							<td class="kf-red">{{ row.failed_count }}</td>
+							<td><span class="kf-status kf-status-{{ row.status | lower | replace(' ', '-') }}">{{ row.status }}</span></td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</section>
+			{% endif %}
+		</main>
+	</div>
+</div>

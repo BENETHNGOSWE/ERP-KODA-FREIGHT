@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kodafreight — Client Dashboard</title>
+<style>
+body { margin: 0; }
+/* Kodafreight client portal dashboard
+   Design language: ERPNext/Frappe v16 (Inter typeface, 8px grid, soft cards). */
+
+:root {
+	--kf-bg: #f4f5f6;
+	--kf-surface: #ffffff;
+	--kf-border: #e2e4e8;
+	--kf-text: #1f272e;
+	--kf-muted: #7c7f86;
+	--kf-primary: #2490ef;
+	--kf-primary-dark: #1379d0;
+	--kf-green: #22a06b;
+	--kf-red: #e03636;
+	--kf-amber: #e8a33d;
+	--kf-radius: 10px;
+	--kf-shadow: 0 1px 2px rgba(31, 39, 46, 0.06), 0 2px 8px rgba(31, 39, 46, 0.04);
+}
+
+.kf-dashboard {
+	background: var(--kf-bg);
+	color: var(--kf-text);
+	font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	font-size: 13px;
+	min-height: 100vh;
+	margin: -1px;
+}
+
+/* ---------- top bar ---------- */
+.kf-topbar {
+	display: flex; align-items: center; justify-content: space-between;
+	background: var(--kf-surface); border-bottom: 1px solid var(--kf-border);
+	padding: 10px 20px; position: sticky; top: 0; z-index: 5;
+}
+.kf-brand { display: flex; align-items: center; gap: 10px; }
+.kf-logo {
+	width: 32px; height: 32px; border-radius: 8px; color: #fff; font-weight: 700;
+	display: flex; align-items: center; justify-content: center; font-size: 13px;
+	background: linear-gradient(135deg, var(--kf-primary), #6f42c1);
+}
+.kf-brand-title { font-weight: 600; font-size: 14px; line-height: 1.1; }
+.kf-brand-sub { color: var(--kf-muted); font-size: 11px; }
+.kf-topbar-right { display: flex; align-items: center; gap: 12px; }
+.kf-user { color: var(--kf-muted); }
+.kf-avatar {
+	width: 28px; height: 28px; border-radius: 50%; background: #dfe7f0; color: #2c3e50;
+	display: flex; align-items: center; justify-content: center; font-weight: 600;
+}
+.kf-pill { border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
+.kf-pill-green { background: #e7f6ee; color: var(--kf-green); }
+.kf-pill-red { background: #fdeceb; color: var(--kf-red); }
+
+/* ---------- layout ---------- */
+.kf-body { display: flex; align-items: flex-start; }
+.kf-sidebar {
+	width: 216px; flex: 0 0 216px; background: var(--kf-surface); min-height: calc(100vh - 53px);
+	border-right: 1px solid var(--kf-border); padding: 14px 10px;
+}
+.kf-side-label {
+	font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+	color: var(--kf-muted); padding: 12px 10px 6px;
+}
+.kf-nav {
+	display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 7px;
+	color: #46525d; text-decoration: none; margin-bottom: 2px;
+}
+.kf-nav span { width: 16px; text-align: center; opacity: .75; }
+.kf-nav:hover { background: #f1f3f5; color: var(--kf-text); text-decoration: none; }
+.kf-nav-active { background: #e8f2fd; color: var(--kf-primary-dark); font-weight: 600; }
+.kf-main { flex: 1; padding: 20px 24px 40px; max-width: 100%; }
+
+/* ---------- page head ---------- */
+.kf-page-head {
+	display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+	margin-bottom: 18px; flex-wrap: wrap;
+}
+.kf-page-head h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+.kf-page-head p { color: var(--kf-muted); margin: 0; font-size: 12px; }
+.kf-actions { display: flex; gap: 8px; }
+.kf-btn {
+	border: 1px solid var(--kf-border); background: var(--kf-surface); color: var(--kf-text);
+	padding: 7px 14px; border-radius: 7px; font-weight: 500; text-decoration: none;
+}
+.kf-btn:hover { background: #f1f3f5; text-decoration: none; color: var(--kf-text); }
+.kf-btn-primary { background: var(--kf-primary); border-color: var(--kf-primary); color: #fff; }
+.kf-btn-primary:hover { background: var(--kf-primary-dark); color: #fff; }
+.kf-alert {
+	background: #fff6e6; border: 1px solid #f3dcae; color: #8a5b00;
+	padding: 10px 14px; border-radius: var(--kf-radius); margin-bottom: 16px;
+}
+
+/* ---------- cards ---------- */
+.kf-cards {
+	display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;
+	margin-bottom: 18px;
+}
+.kf-card {
+	background: var(--kf-surface); border: 1px solid var(--kf-border);
+	border-radius: var(--kf-radius); box-shadow: var(--kf-shadow); padding: 16px;
+}
+.kf-card-primary { background: linear-gradient(135deg, #1b3b6f, #2490ef); border: none; color: #fff; }
+.kf-card-primary .kf-card-label, .kf-card-primary .kf-card-foot { color: rgba(255, 255, 255, .8); }
+.kf-card-label { color: var(--kf-muted); font-size: 11px; text-transform: uppercase;
+	letter-spacing: .05em; margin-bottom: 6px; }
+.kf-card-value { font-size: 27px; font-weight: 700; line-height: 1.15; }
+.kf-card-foot { color: var(--kf-muted); font-size: 11px; margin-top: 6px; }
+.kf-sep { color: var(--kf-border); font-weight: 400; }
+.kf-progress { background: rgba(255, 255, 255, .25); height: 6px; border-radius: 4px;
+	margin-top: 10px; overflow: hidden; }
+.kf-progress span { display: block; height: 6px; background: #7ee2b8; border-radius: 4px; }
+
+/* ---------- panels ---------- */
+.kf-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 14px; }
+.kf-panel {
+	background: var(--kf-surface); border: 1px solid var(--kf-border);
+	border-radius: var(--kf-radius); box-shadow: var(--kf-shadow); padding: 16px;
+	margin-bottom: 14px;
+}
+.kf-panel-head { display: flex; align-items: center; justify-content: space-between;
+	margin-bottom: 12px; }
+.kf-panel-head h2 { font-size: 13px; font-weight: 600; margin: 0; }
+.kf-link { color: var(--kf-primary); font-size: 12px; text-decoration: none; }
+.kf-legend { color: var(--kf-muted); font-size: 11px; }
+.kf-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin: 0 5px 0 10px; }
+.kf-dot-blue { background: var(--kf-primary); }
+.kf-dot-red { background: var(--kf-red); }
+
+/* ---------- chart ---------- */
+.kf-chart { display: flex; align-items: flex-end; gap: 18px; height: 150px;
+	padding: 8px 4px 0; border-bottom: 1px solid var(--kf-border); }
+.kf-bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.kf-bars { display: flex; align-items: flex-end; gap: 4px; height: 120px; }
+.kf-bar { width: 14px; border-radius: 3px 3px 0 0; }
+.kf-bar-sent { background: var(--kf-primary); }
+.kf-bar-failed { background: #f2b3b3; }
+.kf-bar-label { color: var(--kf-muted); font-size: 11px; }
+
+/* ---------- lists / chips / tables ---------- */
+.kf-list { list-style: none; padding: 0; margin: 0 0 8px; }
+.kf-list li { display: flex; justify-content: space-between; padding: 6px 0;
+	border-bottom: 1px dashed #eef0f2; }
+.kf-list li span { color: var(--kf-muted); }
+.kf-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.kf-chip { background: #f1f3f5; border-radius: 20px; padding: 3px 11px; font-size: 12px; }
+.kf-chip-default { background: #e8f2fd; color: var(--kf-primary-dark); font-weight: 600; }
+.kf-table { width: 100%; border-collapse: collapse; }
+.kf-table th {
+	text-align: left; font-weight: 500; color: var(--kf-muted); font-size: 11px;
+	text-transform: uppercase; letter-spacing: .04em; padding: 8px 10px;
+	border-bottom: 1px solid var(--kf-border);
+}
+.kf-table td { padding: 9px 10px; border-bottom: 1px solid #f1f3f5; vertical-align: middle; }
+.kf-table tr:last-child td { border-bottom: none; }
+.kf-mono { font-family: "SFMono-Regular", Menlo, Consolas, monospace; }
+.kf-truncate { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kf-muted { color: var(--kf-muted); }
+.kf-green { color: var(--kf-green); }
+.kf-red { color: var(--kf-red); }
+.kf-amber { color: var(--kf-amber); }
+
+.kf-status { border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
+.kf-status-delivered { background: #e7f6ee; color: var(--kf-green); }
+.kf-status-sent { background: #e8f2fd; color: var(--kf-primary-dark); }
+.kf-status-queued, .kf-status-sending { background: #fdf3e2; color: #a9701a; }
+.kf-status-failed, .kf-status-partially-failed { background: #fdeceb; color: var(--kf-red); }
+.kf-status-cancelled, .kf-status-draft { background: #f1f3f5; color: var(--kf-muted); }
+.kf-status-completed { background: #e7f6ee; color: var(--kf-green); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1100px) {
+	.kf-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.kf-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+	.kf-sidebar { display: none; }
+	.kf-cards { grid-template-columns: 1fr; }
+	.kf-main { padding: 16px; }
+	.kf-truncate { max-width: 160px; }
+}
+
+</style></head><body>
+<div class="kf-dashboard">
+	<div class="kf-topbar">
+		<div class="kf-brand">
+			<div class="kf-logo">KF</div>
+			<div>
+				<div class="kf-brand-title">Kodafreight</div>
+				<div class="kf-brand-sub">SMS Platform</div>
+			</div>
+		</div>
+		<div class="kf-topbar-right">
+			<span class="kf-pill kf-pill-red">
+				
+			</span>
+			<span class="kf-user">Grace Mushi</span>
+			<span class="kf-avatar">G</span>
+		</div>
+	</div>
+
+	<div class="kf-body">
+		<aside class="kf-sidebar">
+			<div class="kf-side-label">Main</div>
+			<a class="kf-nav kf-nav-active" href="/kodafreight"><span>▦</span> Dashboard</a>
+			<a class="kf-nav" href="/app/kodafreight-sms-message/new"><span>✉</span> Send SMS</a>
+			<a class="kf-nav" href="/app/kodafreight-sms-campaign/new"><span>❏</span> Bulk SMS</a>
+			<a class="kf-nav" href="/app/kodafreight-sms-message"><span>☰</span> SMS History</a>
+			<a class="kf-nav" href="/app/query-report/Kodafreight SMS Delivery Report"><span>✓</span> Delivery Reports</a>
+			<div class="kf-side-label">Contacts</div>
+			<a class="kf-nav" href="/app/kodafreight-contact"><span>👤</span> Contacts</a>
+			<a class="kf-nav" href="/app/kodafreight-contact-category"><span>🏷</span> Categories</a>
+			<div class="kf-side-label">Account</div>
+			<a class="kf-nav" href="/app/kodafreight-sms-credit-transaction"><span>◈</span> Credits</a>
+			<a class="kf-nav" href="/app/kodafreight-client-user"><span>👥</span> Staff &amp; Users</a>
+			<a class="kf-nav" href="/app/query-report/Kodafreight SMS Usage Summary"><span>📈</span> Reports</a>
+			<a class="kf-nav" href="/app/kodafreight-client/"><span>⚙</span> Settings</a>
+		</aside>
+
+		<main class="kf-main">
+			<div class="kf-page-head">
+				<div>
+					<h1>Welcome, </h1>
+					<p>Friday, 28 August 2026 &middot; Client ID  &middot;
+						Default sender <strong>not assigned</strong></p>
+				</div>
+				<div class="kf-actions">
+					<a class="kf-btn kf-btn-primary" href="/app/kodafreight-sms-message/new">Send SMS</a>
+					<a class="kf-btn" href="/app/kodafreight-sms-campaign/new">New Campaign</a>
+				</div>
+			</div>
+
+			
+
+			<div class="kf-cards">
+				<div class="kf-card kf-card-primary">
+					<div class="kf-card-label">SMS Credits Available</div>
+					<div class="kf-card-value">8,168</div>
+					<div class="kf-progress"><span style="width: 18.3%"></span></div>
+					<div class="kf-card-foot">1,832 used of
+						10,000 allocated</div>
+				</div>
+				<div class="kf-card">
+					<div class="kf-card-label">Messages Sent Today</div>
+					<div class="kf-card-value">4</div>
+					<div class="kf-card-foot">1,832 all time</div>
+				</div>
+				<div class="kf-card">
+					<div class="kf-card-label">Delivered</div>
+					<div class="kf-card-value kf-green">1,601</div>
+					<div class="kf-card-foot">97.7% success rate</div>
+				</div>
+				<div class="kf-card">
+					<div class="kf-card-label">Failed / Pending</div>
+					<div class="kf-card-value"><span class="kf-red">43</span>
+						<span class="kf-sep">/</span>
+						<span class="kf-amber">2</span></div>
+					<div class="kf-card-foot">failed &middot; awaiting dispatch</div>
+				</div>
+			</div>
+
+			<div class="kf-grid">
+				<section class="kf-panel kf-panel-wide">
+					<div class="kf-panel-head">
+						<h2>Usage — last 7 days</h2>
+						<span class="kf-legend"><i class="kf-dot kf-dot-blue"></i>Sent
+							<i class="kf-dot kf-dot-red"></i>Failed</span>
+					</div>
+					<div class="kf-chart">
+						
+						<div class="kf-bar-group">
+							<div class="kf-bars">
+								<div class="kf-bar kf-bar-sent" style="height: 55px" title="1 sent"></div>
+								<div class="kf-bar kf-bar-failed" style="height: 2px" title="0 failed"></div>
+							</div>
+							<div class="kf-bar-label">Fri</div>
+						</div>
+						
+						<div class="kf-bar-group">
+							<div class="kf-bars">
+								<div class="kf-bar kf-bar-sent" style="height: 55px" title="1 sent"></div>
+								<div class="kf-bar kf-bar-failed" style="height: 2px" title="0 failed"></div>
+							</div>
+							<div class="kf-bar-label">Sat</div>
+						</div>
+						
+						<div class="kf-bar-group">
+							<div class="kf-bars">
+								<div class="kf-bar kf-bar-sent" style="height: 55px" title="1 sent"></div>
+								<div class="kf-bar kf-bar-failed" style="height: 2px" title="0 failed"></div>
+							</div>
+							<div class="kf-bar-label">Sun</div>
+						</div>
+						
+						<div class="kf-bar-group">
+							<div class="kf-bars">
+								<div class="kf-bar kf-bar-sent" style="height: 55px" title="1 sent"></div>
+								<div class="kf-bar kf-bar-failed" style="height: 2px" title="0 failed"></div>
+							</div>
+							<div class="kf-bar-label">Mon</div>
+						</div>
+						
+						<div class="kf-bar-group">
+							<div class="kf-bars">
+								<div class="kf-bar kf-bar-sent" style="height: 55px" title="1 sent"></div>
+								<div class="kf-bar kf-bar-failed" style="height: 2px" title="0 failed"></div>
+							</div>
+							<div class="kf-bar-label">Tue</div>
+						</div>
+						
+						<div class="kf-bar-group">
+							<div class="kf-bars">
+								<div class="kf-bar kf-bar-sent" style="height: 2px" title="0 sent"></div>
+								<div class="kf-bar kf-bar-failed" style="height: 55px" title="1 failed"></div>
+							</div>
+							<div class="kf-bar-label">Wed</div>
+						</div>
+						
+						<div class="kf-bar-group">
+							<div class="kf-bars">
+								<div class="kf-bar kf-bar-sent" style="height: 110px" title="2 sent"></div>
+								<div class="kf-bar kf-bar-failed" style="height: 2px" title="0 failed"></div>
+							</div>
+							<div class="kf-bar-label">Thu</div>
+						</div>
+						
+					</div>
+				</section>
+
+				<section class="kf-panel">
+					<div class="kf-panel-head"><h2>Account</h2></div>
+					<ul class="kf-list">
+						<li><span>Client</span><strong></strong></li>
+						<li><span>Status</span><strong></strong></li>
+						<li><span>Email</span><strong></strong></li>
+						<li><span>Phone</span><strong></strong></li>
+						<li><span>Contacts</span><strong>8</strong></li>
+						<li><span>Categories</span><strong>3</strong></li>
+					</ul>
+					<div class="kf-panel-head"><h2>Sender Names</h2></div>
+					<div class="kf-chips">
+						
+						<span class="kf-chip kf-chip-default">
+							KODAFREIGHT ★</span>
+						
+						<span class="kf-chip ">
+							KODASMS</span>
+						
+					</div>
+					
+					<div class="kf-panel-head"><h2>Assigned Numbers</h2></div>
+					<div class="kf-chips">
+						
+						<span class="kf-chip">15200 · Assigned</span>
+						
+					</div>
+					
+				</section>
+			</div>
+
+			<section class="kf-panel">
+				<div class="kf-panel-head">
+					<h2>Recent Messages</h2>
+					<a class="kf-link" href="/app/kodafreight-sms-message">View all</a>
+				</div>
+				<table class="kf-table">
+					<thead>
+						<tr><th>Recipient</th><th>Message</th><th>Sender</th><th>Parts</th>
+							<th>Status</th><th>When</th></tr>
+					</thead>
+					<tbody>
+						
+						<tr>
+							<td class="kf-mono">255786554433</td>
+							<td class="kf-truncate">Habari, taarifa ya shehena yako itatumwa hivi punde.</td>
+							<td>KODAFREIGHT</td>
+							<td>1</td>
+							<td><span class="kf-status kf-status-queued">Queued</span></td>
+							<td class="kf-muted">just now</td>
+						</tr>
+						
+						<tr>
+							<td class="kf-mono">255715001122</td>
+							<td class="kf-truncate">Habari, taarifa ya shehena yako itatumwa hivi punde.</td>
+							<td>KODAFREIGHT</td>
+							<td>1</td>
+							<td><span class="kf-status kf-status-queued">Queued</span></td>
+							<td class="kf-muted">just now</td>
+						</tr>
+						
+						<tr>
+							<td class="kf-mono">255745788788</td>
+							<td class="kf-truncate">Habari Asha, shehena yako namba DOC-1042 imefika ghala la Dar. Kari...</td>
+							<td>KODAFREIGHT</td>
+							<td>1</td>
+							<td><span class="kf-status kf-status-sent">Sent</span></td>
+							<td class="kf-muted">just now</td>
+						</tr>
+						
+						<tr>
+							<td class="kf-mono">255719887766</td>
+							<td class="kf-truncate">Habari Hamisi, ankara mpya imetumwa kwa barua pepe yako.</td>
+							<td>KODAFREIGHT</td>
+							<td>1</td>
+							<td><span class="kf-status kf-status-delivered">Delivered</span></td>
+							<td class="kf-muted">just now</td>
+						</tr>
+						
+						<tr>
+							<td class="kf-mono">255784556677</td>
+							<td class="kf-truncate">Habari Zawadi, tafadhali thibitisha anwani ya kupokelea mzigo.</td>
+							<td>KODAFREIGHT</td>
+							<td>1</td>
+							<td><span class="kf-status kf-status-failed">Failed</span></td>
+							<td class="kf-muted">just now</td>
+						</tr>
+						
+						<tr>
+							<td class="kf-mono">255755443322</td>
+							<td class="kf-truncate">Habari Peter, shehena DOC-1101 iko tayari kwa usafirishaji.</td>
+							<td>KODAFREIGHT</td>
+							<td>1</td>
+							<td><span class="kf-status kf-status-delivered">Delivered</span></td>
+							<td class="kf-muted">just now</td>
+						</tr>
+						
+						<tr>
+							<td class="kf-mono">255688112233</td>
+							<td class="kf-truncate">Habari Grace, salio lako la usafirishaji limesasishwa.</td>
+							<td>KODAFREIGHT</td>
+							<td>1</td>
+							<td><span class="kf-status kf-status-delivered">Delivered</span></td>
+							<td class="kf-muted">just now</td>
+						</tr>
+						
+						<tr>
+							<td class="kf-mono">255713998877</td>
+							<td class="kf-truncate">Habari Juma, mzigo wako uko forodha. Tutakujulisha ukikamilika.</td>
+							<td>KODAFREIGHT</td>
+							<td>1</td>
+							<td><span class="kf-status kf-status-sent">Sent</span></td>
+							<td class="kf-muted">just now</td>
+						</tr>
+						
+					</tbody>
+				</table>
+			</section>
+
+			
+			<section class="kf-panel">
+				<div class="kf-panel-head"><h2>Recent Campaigns</h2>
+					<a class="kf-link" href="/app/kodafreight-sms-campaign">View all</a></div>
+				<table class="kf-table">
+					<thead><tr><th>Campaign</th><th>Recipients</th><th>Sent</th><th>Failed</th>
+						<th>Status</th></tr></thead>
+					<tbody>
+						
+						<tr>
+							<td>August shipment notice</td>
+							<td>0</td>
+							<td class="kf-green">0</td>
+							<td class="kf-red">0</td>
+							<td><span class="kf-status kf-status-completed">Completed</span></td>
+						</tr>
+						
+					</tbody>
+				</table>
+			</section>
+			
+		</main>
+	</div>
+</div>
+</body></html>

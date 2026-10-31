@@ -1,0 +1,346 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-28 09:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "client_name",
+  "client_type",
+  "status",
+  "cb_1",
+  "email",
+  "phone",
+  "logo",
+  "sb_address",
+  "location",
+  "address_line_1",
+  "address_line_2",
+  "city",
+  "cb_address",
+  "country",
+  "zipcode",
+  "tin_number",
+  "fax",
+  "website",
+  "sb_sms",
+  "sms_enabled",
+  "provider",
+  "cb_sms",
+  "default_sender_name",
+  "senders",
+  "sb_credits",
+  "credit_balance",
+  "credits_allocated",
+  "cb_credits",
+  "credits_used",
+  "low_balance_threshold",
+  "sb_settings",
+  "client_settings",
+  "sb_meta",
+  "notes",
+  "suspended_reason",
+  "legacy_id"
+ ],
+ "fields": [
+  {
+   "default": "CLI-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "CLI-.#####",
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "client_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Client Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "client_type",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Client Type",
+   "options": "Kodafreight Client Type"
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Active\nInactive\nSuspended",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Email",
+   "options": "Email",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "reqd": 1
+  },
+  {
+   "fieldname": "logo",
+   "fieldtype": "Attach Image",
+   "label": "Logo"
+  },
+  {
+   "fieldname": "sb_address",
+   "fieldtype": "Section Break",
+   "label": "Address"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "reqd": 1
+  },
+  {
+   "fieldname": "address_line_1",
+   "fieldtype": "Data",
+   "label": "Address Line 1"
+  },
+  {
+   "fieldname": "address_line_2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_address",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Tanzania",
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country",
+   "reqd": 1
+  },
+  {
+   "fieldname": "zipcode",
+   "fieldtype": "Data",
+   "label": "Zip Code"
+  },
+  {
+   "fieldname": "tin_number",
+   "fieldtype": "Data",
+   "label": "TIN Number"
+  },
+  {
+   "fieldname": "fax",
+   "fieldtype": "Data",
+   "label": "Fax"
+  },
+  {
+   "fieldname": "website",
+   "fieldtype": "Data",
+   "label": "Website"
+  },
+  {
+   "fieldname": "sb_sms",
+   "fieldtype": "Section Break",
+   "label": "SMS Configuration"
+  },
+  {
+   "default": "1",
+   "fieldname": "sms_enabled",
+   "fieldtype": "Check",
+   "label": "SMS Enabled"
+  },
+  {
+   "fieldname": "provider",
+   "fieldtype": "Link",
+   "label": "SMS Provider Override",
+   "options": "Kodafreight SMS Provider"
+  },
+  {
+   "fieldname": "cb_sms",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Derived from the assigned sender marked as default.",
+   "fieldname": "default_sender_name",
+   "fieldtype": "Link",
+   "label": "Default Sender Name",
+   "options": "Kodafreight Sender Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "senders",
+   "fieldtype": "Table",
+   "label": "Assigned Sender Names",
+   "options": "Kodafreight Client Sender"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sb_credits",
+   "fieldtype": "Section Break",
+   "label": "Credits"
+  },
+  {
+   "fieldname": "credit_balance",
+   "fieldtype": "Int",
+   "label": "Credit Balance",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "credits_allocated",
+   "fieldtype": "Int",
+   "label": "Credits Allocated",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_credits",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "credits_used",
+   "fieldtype": "Int",
+   "label": "Credits Used",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": 100,
+   "fieldname": "low_balance_threshold",
+   "fieldtype": "Int",
+   "label": "Low Balance Threshold"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sb_settings",
+   "fieldtype": "Section Break",
+   "label": "Client Settings"
+  },
+  {
+   "fieldname": "client_settings",
+   "fieldtype": "Table",
+   "label": "Settings",
+   "options": "Kodafreight Client Setting"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sb_meta",
+   "fieldtype": "Section Break",
+   "label": "Meta"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "Notes"
+  },
+  {
+   "depends_on": "eval:doc.status=='Suspended'",
+   "fieldname": "suspended_reason",
+   "fieldtype": "Small Text",
+   "label": "Suspension Reason"
+  },
+  {
+   "description": "Primary key of the source record in the Laravel database (migration only).",
+   "fieldname": "legacy_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Legacy ID",
+   "no_copy": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-28 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Kodafreight",
+ "name": "Kodafreight Client",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Platform Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 0,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Client Admin",
+   "share": 0,
+   "write": 0
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 0,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight SMS Manager",
+   "share": 0,
+   "write": 0
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 0,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Client Staff",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "search_fields": "client_name,email,phone",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "client_name",
+ "track_changes": 1
+}

@@ -1,0 +1,42 @@
+# Phase 13 — Bugs found in the Laravel system and how Kodafreight fixes them
+
+Each item was found by reading the Laravel source (file and symbol given), and each fix is
+covered by a test in `tests_offline/run_tests.py` or `kodafreight/tests/`.
+
+| # | Laravel defect | Where | Kodafreight fix | Test |
+|---|---|---|---|---|
+| 1 | `sendMessage($phones, $text)` called with 2 arguments while the helper signature is `($phones, $text, $senderId)` → `ArgumentCountError`, no sender | `Admin/MessageController@sendMessage` vs `ControllerHelper.php:433` | One dispatch path with an explicit, validated `sender_name`; the sender is resolved from the client's default when omitted | `test_send_single_sms_success_deducts_one_credit` |
+| 2 | Message quota checked only when rendering the form (`canSendMessages`), never on submit | `Admin/MessageController@showsendMessageToExistingCustomerform` | Credits are deducted server-side at dispatch inside a row lock; a shortfall fails the message and is audited | `test_insufficient_credits_blocks_send`, `test_credit_never_goes_negative` |
+| 3 | Usage counted as `Message::count()` — includes failed and pending rows, ignores multi-part billing | same controller | Full ledger: `Allocation/Deduction/Refund/Adjustment/Expiry` with `balance_after`; billing per SMS part | `test_credit_transactions_recorded_with_running_balance`, `test_long_message_charges_per_part` |
+| 4 | Any client could send with **any** sender ID (only `max:11` validated) | `Admin/MessageController@sendMessageleadsenderid` | `assert_sender_allowed()` verifies assignment **and** active status on every send, campaign and API call | `test_sender_ownership_enforced`, `test_campaign_rejects_foreign_sender` |
+| 5 | Duplicate sends: the cron took 20 `pending` rows with no locking, so two overlapping runs sent them twice | `SendPendingMessagesCommand` | Atomic claim `UPDATE … SET status='Sending' WHERE status='Queued'`; only the winning worker dispatches | `test_queue_processing_batches_and_claims_once` |
+| 6 | `status = 'delivered'` was set on API acceptance; real delivery was never known | `ControllerHelper` + controllers | `Sent` ≠ `Delivered`; a signed delivery-report webhook sets `Delivered`/`Failed` and refunds on confirmed failure | `test_delivery_report_marks_delivered` |
+| 7 | No callback endpoint at all, therefore no duplicate protection | – | `delivery_report` with HMAC signature, IP allowlist and a unique `dedupe_key` | `test_duplicate_delivery_report_is_idempotent` |
+| 8 | `CURLOPT_SSL_VERIFYPEER = false`, no `CURLOPT_TIMEOUT` → MITM risk and hung web workers | `ControllerHelper.php:433/484/534` | `verify_ssl` defaults to 1, `timeout` defaults to 30 s, both configurable per provider | driver settings asserted in `test_kilakona_payload_matches_laravel_contract` |
+| 9 | Bulk send made one blocking HTTP call per recipient inside the HTTP request | `Admin/MessageController@sendMessageToExistingCustomer` | Campaigns materialise recipients and are processed by a background worker | `test_campaign_dedupes_and_sends_to_all` |
+| 10 | No phone normalisation → local formats silently rejected by the broker | everywhere | `phone.normalise()` to MSISDN, invalid numbers rejected at entry | `test_phone_formats`, `test_invalid_number_rejected` |
+| 11 | Every staff account created with the hard-coded password `123456`; the submitted password was ignored | `Admin/StaffController@store` | Random password + Frappe reset e-mail; `send_password_reset()` action | reviewed; enforced in `KodafreightClientUser.get_or_create_user` |
+| 12 | `client_admins.password` stored the plaintext password | `Owner/ClientController@store` | Not migrated; no password column exists in Kodafreight | migration script omits it |
+| 13 | `clients` had no status column — clients could not be deactivated or suspended | `create_clients_table` | `status` (Active/Inactive/Suspended) + suspension reason; inactive clients cannot send and their queue is cancelled | `test_suspended_client_cannot_send`, `test_deactivating_client_cancels_queued_messages` |
+| 14 | `SMSManagerDashboardController` used `Auth::` without importing it and registered middleware `'mutliple'` (typo) → runtime error | `KodaSMS/SMSManagerDashboardController` | Dashboard data comes from one tested API (`client_dashboard`), no per-role controller duplication | dashboard rendered from real code in `render_dashboard.py` |
+| 15 | `SendPendingSmsJob::handle()` empty (dead code) | `app/Jobs` | Real background jobs: `process_pending_messages`, `process_campaign`, `send_single_message` | `test_queue_processing_batches_and_claims_once` |
+| 16 | Multiple quota rows per client possible; `->value()` silently used the first | `customermessages` | One `SMS Credit Account` per client (`autoname = field:client`, unique) | schema + `validate_app.py` |
+| 17 | Failed messages lost the provider error text | `ControllerHelper` | `error_message` + full `provider_response` JSON stored | `test_failed_send_refunds_credits` |
+| 18 | No retry logic | – | `retry_count`, `next_retry_at`, exponential-ish backoff, `max_retries` | `test_retryable_failure_schedules_retry`, `test_retries_stop_at_max` |
+| 19 | `authorize()` calls commented out in several controllers (`AssignnameController`, `CustomermessageController`) | those controllers | Permissions are declarative (role permissions) plus `has_permission` hooks; admin-only actions use `frappe.only_for` | `validate_app.py` permission checks |
+| 20 | No audit trail | – | `Kodafreight Audit Log` for client/status/credit/sms/campaign/provider events | exercised throughout the dispatch tests |
+| 21 | Duplicate recipients sent twice in a blast | recipient loop | Campaign recipients de-duplicated after normalisation | `test_campaign_dedupes_and_sends_to_all` |
+| 22 | Contacts could hold the same number many times per client | `customers`/`customerleads` | Per-client duplicate detection on the normalised MSISDN | `test_contact_normalises_and_dedupes` |
+| 23 | Sent history was editable | `messages` CRUD | Sent/Delivered messages are immutable | `test_sent_message_content_is_immutable` |
+| 24 | Secrets committed in `.env` with `APP_DEBUG=true` | repository root | Credentials live in a `Password` field (encrypted); the validator greps the package for the legacy secrets and fails the build if any appear | `validate_app.py` |
+
+## Bugs found and fixed **inside Kodafreight** during its own bug-hunting phase
+
+| # | Defect introduced | Symptom | Fix |
+|---|---|---|---|
+| A | `sync_roles` used `if target and target not in current or len(...) != len(...)` — Python precedence made the second clause independent, so the user document was saved on every update (and the role could be dropped) | redundant writes, possible role loss | rewritten as a set comparison (`current == desired → return`) |
+| B | `Kodafreight SMS Message.sender_name` was mandatory in the schema, but inbound (MO) messages have no sender | webhook `inbound_message` would fail validation | `mandatory_depends_on: doc.direction != 'Inbound'` + early return in `validate` |
+| C | The scheduler claim relied on `frappe.db._cursor.rowcount` without a fallback | drivers without `rowcount` would silently skip every message | `_claim()` falls back to re-reading the status |
+| D | Manual creation of a `SMS Credit Transaction` from the desk would have bypassed the account totals | ledger/account drift | `before_insert` re-posts through the ledger service and aborts the manual draft |
+| E | Deleting a client would have orphaned messages/credits | data loss | `on_trash` refuses while dependent records exist and points to `status = Inactive` |
+| F | Campaign recipients entered manually could contain the same number in two formats | double billing | normalisation + de-duplication in `normalise_manual_rows` |

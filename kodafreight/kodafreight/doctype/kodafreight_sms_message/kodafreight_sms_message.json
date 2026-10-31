@@ -1,0 +1,324 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-28 09:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "client",
+  "recipient",
+  "sender_name",
+  "status",
+  "cb_1",
+  "campaign",
+  "contact",
+  "sms_number",
+  "direction",
+  "sb_content",
+  "message",
+  "encoding",
+  "parts",
+  "cb_content",
+  "character_count",
+  "credits_used",
+  "sb_delivery",
+  "provider",
+  "provider_reference",
+  "provider_message_id",
+  "retry_count",
+  "cb_delivery",
+  "queued_at",
+  "sent_at",
+  "delivered_at",
+  "next_retry_at",
+  "sb_error",
+  "error_message",
+  "provider_response",
+  "legacy_id"
+ ],
+ "fields": [
+  {
+   "default": "SMS-.YYYY.-.######",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "SMS-.YYYY.-.######",
+   "reqd": 1
+  },
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Client",
+   "options": "Kodafreight Client",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "recipient",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Recipient (MSISDN)",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "sender_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sender Name",
+   "mandatory_depends_on": "eval:doc.direction!='Inbound'",
+   "options": "Kodafreight Sender Name"
+  },
+  {
+   "default": "Queued",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nQueued\nSending\nSent\nDelivered\nFailed\nCancelled",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Kodafreight SMS Campaign",
+   "read_only": 1
+  },
+  {
+   "fieldname": "contact",
+   "fieldtype": "Link",
+   "label": "Contact",
+   "options": "Kodafreight Contact",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sms_number",
+   "fieldtype": "Link",
+   "label": "SMS Number",
+   "options": "Kodafreight SMS Number"
+  },
+  {
+   "default": "Outbound",
+   "fieldname": "direction",
+   "fieldtype": "Select",
+   "label": "Direction",
+   "options": "Outbound\nInbound",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_content",
+   "fieldtype": "Section Break",
+   "label": "Content"
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Text",
+   "label": "Message",
+   "reqd": 1
+  },
+  {
+   "default": "GSM7",
+   "fieldname": "encoding",
+   "fieldtype": "Select",
+   "label": "Encoding",
+   "options": "GSM7\nUCS2",
+   "read_only": 1
+  },
+  {
+   "default": 1,
+   "fieldname": "parts",
+   "fieldtype": "Int",
+   "label": "Parts",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_content",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "character_count",
+   "fieldtype": "Int",
+   "label": "Characters",
+   "read_only": 1
+  },
+  {
+   "fieldname": "credits_used",
+   "fieldtype": "Int",
+   "label": "Credits Used",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_delivery",
+   "fieldtype": "Section Break",
+   "label": "Delivery"
+  },
+  {
+   "fieldname": "provider",
+   "fieldtype": "Link",
+   "label": "Provider",
+   "options": "Kodafreight SMS Provider",
+   "read_only": 1
+  },
+  {
+   "description": "Idempotency key sent to the provider.",
+   "fieldname": "provider_reference",
+   "fieldtype": "Data",
+   "label": "Provider Reference",
+   "no_copy": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "provider_message_id",
+   "fieldtype": "Data",
+   "label": "Provider Message ID",
+   "no_copy": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "retry_count",
+   "fieldtype": "Int",
+   "label": "Retry Count",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_delivery",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "queued_at",
+   "fieldtype": "Datetime",
+   "label": "Queued At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sent_at",
+   "fieldtype": "Datetime",
+   "label": "Sent At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivered_at",
+   "fieldtype": "Datetime",
+   "label": "Delivered At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "next_retry_at",
+   "fieldtype": "Datetime",
+   "label": "Next Retry At",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sb_error",
+   "fieldtype": "Section Break",
+   "label": "Diagnostics"
+  },
+  {
+   "fieldname": "error_message",
+   "fieldtype": "Small Text",
+   "label": "Error Message",
+   "read_only": 1
+  },
+  {
+   "fieldname": "provider_response",
+   "fieldtype": "Code",
+   "label": "Provider Response",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "description": "Primary key of the source record in the Laravel database (migration only).",
+   "fieldname": "legacy_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Legacy ID",
+   "no_copy": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-28 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Kodafreight",
+ "name": "Kodafreight SMS Message",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Platform Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Client Admin",
+   "share": 0,
+   "write": 0
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight SMS Manager",
+   "share": 0,
+   "write": 0
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 0,
+   "if_owner": 1,
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Client Staff",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
