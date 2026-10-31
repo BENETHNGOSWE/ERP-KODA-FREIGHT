@@ -47,6 +47,7 @@ role_home_page = {
 # ------------------------------------------------------------------------------
 permission_query_conditions = {
     "Kodafreight Client": "kodafreight.permissions.client_query_conditions",
+    "Kodafreight Branch": "kodafreight.permissions.branch_query",
     "Kodafreight Sender Name": "kodafreight.permissions.sender_name_query_conditions",
     "Kodafreight SMS Message": "kodafreight.permissions.sms_message_query",
     "Kodafreight SMS Campaign": "kodafreight.permissions.sms_campaign_query",
@@ -63,6 +64,7 @@ permission_query_conditions = {
 
 has_permission = {
     "Kodafreight Client": "kodafreight.permissions.client_has_permission",
+    "Kodafreight Branch": "kodafreight.permissions.has_tenant_permission",
     "Kodafreight Sender Name": "kodafreight.permissions.sender_name_has_permission",
     "Kodafreight SMS Message": "kodafreight.permissions.has_tenant_permission",
     "Kodafreight SMS Campaign": "kodafreight.permissions.has_tenant_permission",

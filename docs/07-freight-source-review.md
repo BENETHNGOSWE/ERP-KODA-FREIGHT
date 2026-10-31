@@ -27,3 +27,7 @@ Suggested acceptance: an owner creates a client and administrator; the client cr
 ## Work still required
 
 Complete the route/controller/model/view and permission inventory against this GitHub revision; document fields, documents and business rules; design and implement the ERPNext/Frappe mapping and migration; install ERPNext version 16 on a backed-up/test site; implement printable documents, tenant controls, accounting and SMS integration; run unit, bench, browser, tenant-isolation and end-to-end tests on the actual bench. No freight implementation is claimed complete by this review.
+
+## Implementation progress — branch foundation
+
+A first `Kodafreight Branch` DocType adds client, branch name and branch code, with server-side client checks, tenant list and document permission hooks, and a Freight Setup workspace link. Three new Frappe bench tests exercise tenant listing, cross-client creation, and changing an existing branch's client. Local checks: 47 existing offline checks pass; structural validation reports 21 DocTypes, 0 warnings, 0 errors; four branch controller checks pass with mocked Frappe. **New branch features and tests have not been run on a real bench.** Branch is an initial component, not the full freight flow, and is not yet connected to users, cargo, ERPNext accounting, or legacy migration. Do not use for production before further testing.

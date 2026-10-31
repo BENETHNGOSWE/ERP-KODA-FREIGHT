@@ -12,6 +12,7 @@ CLIENT_ROLES = (
 # DocTypes that carry a `client` link field and must be tenant filtered.
 TENANT_DOCTYPES = (
     "Kodafreight Client User",
+    "Kodafreight Branch",
     "Kodafreight Contact",
     "Kodafreight Contact Category",
     "Kodafreight SMS Message",

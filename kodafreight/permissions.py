@@ -109,6 +109,7 @@ def sender_name_has_permission(doc, ptype=None, user=None):
 
 
 # -- generated condition callables (referenced from hooks.py) -----------------------
+branch_query = build_query_conditions("Kodafreight Branch")
 sms_message_query = build_query_conditions("Kodafreight SMS Message")
 sms_campaign_query = build_query_conditions("Kodafreight SMS Campaign")
 contact_query = build_query_conditions("Kodafreight Contact")
