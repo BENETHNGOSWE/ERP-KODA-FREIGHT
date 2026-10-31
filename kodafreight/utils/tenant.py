@@ -23,6 +23,14 @@ TENANT_DOCTYPES = (
     "Kodafreight SMS Number",
     "Kodafreight Subscription",
     "Kodafreight Audit Log",
+    # --- freight ------------------------------------------------------------------
+    "Kodafreight Cargo Load",
+    "Kodafreight Container",
+    "Kodafreight Freight Tariff",
+    "Kodafreight Release Order",
+    "Kodafreight Delivery Order",
+    "Kodafreight Load Type",
+    "Kodafreight Unit Type",
 )
 
 

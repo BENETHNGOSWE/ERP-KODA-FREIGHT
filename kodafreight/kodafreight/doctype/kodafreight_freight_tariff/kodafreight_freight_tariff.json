@@ -1,0 +1,183 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:tariff_name",
+ "creation": "2026-11-01 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "client",
+  "tariff_name",
+  "enabled",
+  "is_default",
+  "cbm_rate_col",
+  "currency",
+  "cbm_rate",
+  "exchange_rate",
+  "transport_fee",
+  "validity",
+  "valid_from",
+  "valid_to",
+  "remarks",
+  "legacy_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Client",
+   "options": "Kodafreight Client",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "tariff_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tariff Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Default For This Client"
+  },
+  {
+   "fieldname": "cbm_rate_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "TZS",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "description": "Price per cubic metre before exchange rate.",
+   "fieldname": "cbm_rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "CBM Rate",
+   "options": "currency",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "description": "Laravel `invoices.exchange_rate`. 1 = no conversion.",
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate",
+   "precision": "6"
+  },
+  {
+   "fieldname": "transport_fee",
+   "fieldtype": "Currency",
+   "label": "Transport Fee",
+   "options": "currency"
+  },
+  {
+   "fieldname": "validity",
+   "fieldtype": "Section Break",
+   "label": "Validity"
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "label": "Valid From"
+  },
+  {
+   "fieldname": "valid_to",
+   "fieldtype": "Date",
+   "label": "Valid To"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "legacy_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Legacy ID",
+   "no_copy": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-11-01 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Kodafreight",
+ "name": "Kodafreight Freight Tariff",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Platform Admin",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Client Admin",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Operations",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Cashier"
+  }
+ ],
+ "search_fields": "tariff_name,lane",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "tariff_name",
+ "track_changes": 1
+}

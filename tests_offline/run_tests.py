@@ -657,6 +657,125 @@ def test_contact_category_must_belong_to_same_client():
 
 
 # ======================================================================================
+# freight (Laravel Loadpackage -> Cargo Load -> Sales Invoice -> Release -> Delivery)
+# ======================================================================================
+
+from kodafreight.services import freight as freight_service  # noqa: E402
+
+
+def _load(**kw):
+    base = {
+        "doctype": "Kodafreight Cargo Load", "name": "KFL-TEST",
+        "length": 0, "width": 0, "height": 0,
+        "use_manual_volume": 0, "manual_volume": 0,
+        "cbm_rate": 0, "exchange_rate": 1, "transport_fee": 0, "weight": 0,
+    }
+    base.update(kw)
+    return frappe._dict(base)
+
+
+def test_cbm_is_length_times_width_times_height():
+    eq(freight_service.compute_volume(2, 0.5, 0.3), 0.3, "volume")
+
+
+def test_zero_dimensions_give_zero_volume_and_no_billable_cbm():
+    load = _load()
+    eq(freight_service.billable_volume(load), 0, "billable")
+
+
+def test_manual_volume_overrides_measurements():
+    load = _load(length=2, width=1, height=1, use_manual_volume=1, manual_volume=3.5)
+    eq(freight_service.billable_volume(load), 3.5, "manual wins")
+    eq(freight_service.compute_volume(load.length, load.width, load.height), 2, "measured kept")
+
+
+def test_freight_amount_reproduces_legacy_invoice_total():
+    # Real record INV-20250905-VKHMO: 234 CBM x 2750 rate x 20 exchange = 12,870,000
+    load = _load(use_manual_volume=1, manual_volume=234, cbm_rate=2750, exchange_rate=20)
+    eq(freight_service.freight_amount(load), 12_870_000, "freight")
+    eq(freight_service.total_amount(load), 12_870_000, "total")
+    eq(freight_service.is_priced(load), True, "priced")
+
+
+def test_transport_fee_is_added_to_the_freight_amount():
+    load = _load(use_manual_volume=1, manual_volume=2, cbm_rate=1000, transport_fee=250)
+    eq(freight_service.freight_amount(load), 2000, "freight")
+    eq(freight_service.total_amount(load), 2250, "due = amount + transport")
+
+
+def test_exchange_rate_defaults_to_one_when_blank():
+    load = _load(use_manual_volume=1, manual_volume=3, cbm_rate=1000, exchange_rate=0)
+    eq(freight_service.freight_amount(load), 3000, "no fx")
+
+
+def test_load_without_volume_or_rate_is_not_priced():
+    eq(freight_service.is_priced(_load(cbm_rate=2750)), False, "no volume")
+    eq(freight_service.is_priced(_load(use_manual_volume=1, manual_volume=2)), False, "no rate")
+    eq(freight_service.is_priced(_load(transport_fee=500)), True, "transport alone is billable")
+
+
+def test_parse_invoice_names_accepts_json_list_csv_and_newlines():
+    eq(freight_service.parse_invoice_names('["SI-1", "SI-2"]'), ["SI-1", "SI-2"], "json")
+    eq(freight_service.parse_invoice_names("SI-1, SI-2"), ["SI-1", "SI-2"], "csv")
+    eq(freight_service.parse_invoice_names("SI-1\nSI-2\n"), ["SI-1", "SI-2"], "newlines")
+
+
+def test_parse_invoice_names_rejects_empty_selection():
+    raises(ff.ValidationError, lambda: freight_service.parse_invoice_names("[]"), "empty")
+    raises(ff.ValidationError, lambda: freight_service.parse_invoice_names("  "), "blank")
+
+
+def _invoice(name, grand_total, outstanding, docstatus=1, customer="CUST-1"):
+    return frappe.get_doc({
+        "doctype": "Sales Invoice", "name": name, "customer": customer,
+        "grand_total": grand_total, "outstanding_amount": outstanding,
+        "docstatus": docstatus,
+    }).insert()
+
+
+def test_invoice_status_label_follows_the_money_not_a_typed_field():
+    eq(freight_service.invoice_status_label(_invoice("SI-D", 100, 100, 0)), "Draft Invoice")
+    eq(freight_service.invoice_status_label(_invoice("SI-U", 100, 100)), "Invoiced")
+    eq(freight_service.invoice_status_label(_invoice("SI-P", 100, 40)), "Partly Paid")
+    eq(freight_service.invoice_status_label(_invoice("SI-F", 100, 0)), "Paid")
+
+
+def test_release_is_refused_while_anything_is_outstanding():
+    _invoice("SI-UNPAID", 1000, 400)
+    raises(ff.ValidationError,
+           lambda: freight_service.assert_invoice_paid("SI-UNPAID"), "partial blocks")
+
+
+def test_release_is_allowed_only_when_fully_paid():
+    _invoice("SI-PAID", 1000, 0)
+    state = freight_service.assert_invoice_paid("SI-PAID")
+    eq(state["paid"], True, "paid")
+    eq(state["outstanding_amount"], 0, "nothing outstanding")
+
+
+def test_release_is_refused_for_a_draft_invoice():
+    _invoice("SI-DRAFT", 1000, 1000, docstatus=0)
+    raises(ff.ValidationError,
+           lambda: freight_service.assert_invoice_paid("SI-DRAFT"), "draft blocks")
+
+
+def test_payment_state_reports_the_real_numbers():
+    _invoice("SI-PART", 575.01, 275.01)
+    state = freight_service.invoice_payment_state("SI-PART")
+    eq(state["grand_total"], 575.01, "due")
+    eq(state["outstanding_amount"], 275.01, "balance")
+    eq(round(state["grand_total"] - state["outstanding_amount"], 2), 300.00, "received")
+
+
+# Register the freight tests declared above (they are written as plain functions so the
+# file reads like documentation, then collected here in declaration order).
+for _name, _fn in list(globals().items()):
+    if _name.startswith("test_") and callable(_fn) and _fn not in RESULTS:
+        RESULTS.append(_fn)
+
+
+
+# ======================================================================================
 # runner
 # ======================================================================================
 

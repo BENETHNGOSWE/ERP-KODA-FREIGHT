@@ -1,0 +1,289 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "creation": "2026-11-01 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "client",
+  "naming_series",
+  "container_number",
+  "container_type",
+  "max_volume_cbm",
+  "status",
+  "vessel_col",
+  "shipping_line",
+  "vessel",
+  "voyage_no",
+  "seal_number",
+  "port_of_loading",
+  "port_of_discharge",
+  "dates",
+  "loading_date",
+  "etd",
+  "eta",
+  "manifest",
+  "loads",
+  "totals",
+  "load_count",
+  "total_cbm",
+  "total_weight",
+  "fill_percent",
+  "more",
+  "remarks",
+  "legacy_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Client",
+   "options": "Kodafreight Client",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "default": "KFC-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "no_copy": 1,
+   "options": "KFC-.YYYY.-",
+   "print_hide": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "container_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Container Number",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "40ft",
+   "fieldname": "container_type",
+   "fieldtype": "Select",
+   "label": "Container Type",
+   "options": "20ft\n40ft\n40ft HC\n45ft\nLCL\nOther"
+  },
+  {
+   "default": "67",
+   "fieldname": "max_volume_cbm",
+   "fieldtype": "Float",
+   "label": "Capacity (CBM)",
+   "precision": "2"
+  },
+  {
+   "default": "Open",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Container Status",
+   "options": "Open\nLoading\nSealed\nShipped\nArrived\nClosed"
+  },
+  {
+   "fieldname": "vessel_col",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shipping_line",
+   "fieldtype": "Data",
+   "label": "Shipping Line"
+  },
+  {
+   "fieldname": "vessel",
+   "fieldtype": "Data",
+   "label": "Vessel"
+  },
+  {
+   "fieldname": "voyage_no",
+   "fieldtype": "Data",
+   "label": "Voyage No"
+  },
+  {
+   "fieldname": "seal_number",
+   "fieldtype": "Data",
+   "label": "Seal Number"
+  },
+  {
+   "default": "Guangzhou, China",
+   "fieldname": "port_of_loading",
+   "fieldtype": "Data",
+   "label": "Port of Loading"
+  },
+  {
+   "default": "Dar es Salaam, Tanzania",
+   "fieldname": "port_of_discharge",
+   "fieldtype": "Data",
+   "label": "Port of Discharge"
+  },
+  {
+   "fieldname": "dates",
+   "fieldtype": "Section Break",
+   "label": "Schedule"
+  },
+  {
+   "fieldname": "loading_date",
+   "fieldtype": "Date",
+   "label": "Loading Date"
+  },
+  {
+   "fieldname": "etd",
+   "fieldtype": "Date",
+   "label": "ETD"
+  },
+  {
+   "fieldname": "eta",
+   "fieldtype": "Date",
+   "label": "ETA"
+  },
+  {
+   "fieldname": "manifest",
+   "fieldtype": "Section Break",
+   "label": "Manifest"
+  },
+  {
+   "fieldname": "loads",
+   "fieldtype": "Table",
+   "label": "Cargo Loads",
+   "options": "Kodafreight Container Load"
+  },
+  {
+   "fieldname": "totals",
+   "fieldtype": "Section Break",
+   "label": "Utilisation"
+  },
+  {
+   "fieldname": "load_count",
+   "fieldtype": "Int",
+   "label": "Loads",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_cbm",
+   "fieldtype": "Float",
+   "label": "Total CBM",
+   "precision": "4",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_weight",
+   "fieldtype": "Float",
+   "label": "Total Weight (kg)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fill_percent",
+   "fieldtype": "Percent",
+   "label": "Fill %",
+   "read_only": 1
+  },
+  {
+   "fieldname": "more",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "legacy_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Legacy ID",
+   "no_copy": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-11-01 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Kodafreight",
+ "name": "Kodafreight Container",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Platform Admin",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Client Admin",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Operations",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Cashier"
+  },
+  {
+   "amend": 1,
+   "create": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Godown Manager",
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Kodafreight Client Staff"
+  }
+ ],
+ "search_fields": "container_number,shipping_line,vessel",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "container_number",
+ "track_changes": 1
+}

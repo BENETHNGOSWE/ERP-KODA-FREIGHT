@@ -1,13 +1,16 @@
 app_name = "kodafreight"
 app_title = "Kodafreight"
 app_publisher = "Kodafreight"
-app_description = "Multi-tenant SMS SaaS platform (migrated from a Laravel application)"
+app_description = "Multi-tenant freight forwarding + SMS platform (migrated from a Laravel application)"
 app_email = "support@kodafreight.local"
 app_license = "MIT"
 app_version = "0.1.0"
 
 # Frappe / ERPNext version 16
-required_apps = []
+required_apps = ["frappe/erpnext"]
+
+# The freight module invoices through ERPNext (Sales Invoice + Payment Entry), so ERPNext
+# must be installed on the site. The SMS module itself has no such dependency.
 
 # Ship dashboard records that live outside a doctype folder. Frappe's module sync only walks
 # `IMPORTABLE_DOCTYPES` plus whatever an app adds here, so without these two entries the
@@ -21,6 +24,11 @@ app_include_css = "/assets/kodafreight/css/kodafreight.css"
 app_include_js = "/assets/kodafreight/js/kodafreight.js"
 
 web_include_css = "/assets/kodafreight/css/kodafreight_portal.css"
+
+# List view extension: "Merge invoices" action on the Sales Invoice list (Laravel InvoiceMerge).
+doctype_list_js = {
+    "Sales Invoice": "public/js/sales_invoice_list.js",
+}
 
 # ------------------------------------------------------------------------------
 # Installation
@@ -38,6 +46,9 @@ website_route_rules = [
 # Client users land on the SMS workspace of the desk.
 role_home_page = {
     "Kodafreight Client Admin": "app/kodafreight",
+    "Kodafreight Operations": "app/kodafreight",
+    "Kodafreight Cashier": "app/kodafreight",
+    "Kodafreight Godown Manager": "app/kodafreight",
     "Kodafreight SMS Manager": "app/kodafreight",
     "Kodafreight Client Staff": "app/kodafreight",
 }
@@ -60,6 +71,17 @@ permission_query_conditions = {
     "Kodafreight SMS Number": "kodafreight.permissions.sms_number_query",
     "Kodafreight Subscription": "kodafreight.permissions.subscription_query",
     "Kodafreight Audit Log": "kodafreight.permissions.audit_log_query",
+    # --- freight ---------------------------------------------------------------
+    "Kodafreight Cargo Load": "kodafreight.permissions.cargo_load_query",
+    "Kodafreight Container": "kodafreight.permissions.container_query",
+    "Kodafreight Freight Tariff": "kodafreight.permissions.freight_tariff_query",
+    "Kodafreight Release Order": "kodafreight.permissions.release_order_query",
+    "Kodafreight Delivery Order": "kodafreight.permissions.delivery_order_query",
+    "Kodafreight Load Type": "kodafreight.permissions.load_type_query",
+    "Kodafreight Unit Type": "kodafreight.permissions.unit_type_query",
+    # ERPNext documents that now belong to a tenant as well.
+    "Customer": "kodafreight.permissions.customer_query_conditions",
+    "Sales Invoice": "kodafreight.permissions.sales_invoice_query_conditions",
 }
 
 has_permission = {
@@ -76,6 +98,16 @@ has_permission = {
     "Kodafreight SMS Delivery Log": "kodafreight.permissions.has_tenant_permission",
     "Kodafreight SMS Number": "kodafreight.permissions.has_tenant_permission",
     "Kodafreight Subscription": "kodafreight.permissions.has_tenant_permission",
+    # --- freight ---------------------------------------------------------------
+    "Kodafreight Cargo Load": "kodafreight.permissions.has_tenant_permission",
+    "Kodafreight Container": "kodafreight.permissions.has_tenant_permission",
+    "Kodafreight Freight Tariff": "kodafreight.permissions.has_tenant_permission",
+    "Kodafreight Release Order": "kodafreight.permissions.has_tenant_permission",
+    "Kodafreight Delivery Order": "kodafreight.permissions.has_tenant_permission",
+    "Kodafreight Load Type": "kodafreight.permissions.has_tenant_permission",
+    "Kodafreight Unit Type": "kodafreight.permissions.has_tenant_permission",
+    "Customer": "kodafreight.permissions.customer_has_permission",
+    "Sales Invoice": "kodafreight.permissions.sales_invoice_has_permission",
 }
 
 # ------------------------------------------------------------------------------
@@ -87,6 +119,19 @@ doc_events = {
     },
     "User": {
         "on_update": "kodafreight.events.on_user_update",
+    },
+    # --- freight ---------------------------------------------------------------
+    "Customer": {
+        "before_insert": "kodafreight.freight_events.stamp_customer_tenant",
+    },
+    "Sales Invoice": {
+        "on_update": "kodafreight.freight_events.sync_cargo_load_status",
+        "on_submit": "kodafreight.freight_events.sync_cargo_load_status",
+        "on_cancel": "kodafreight.freight_events.sync_cargo_load_status",
+    },
+    "Payment Entry": {
+        "on_submit": "kodafreight.freight_events.sync_on_payment",
+        "on_cancel": "kodafreight.freight_events.sync_on_payment",
     },
 }
 

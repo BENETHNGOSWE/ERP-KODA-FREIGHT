@@ -1,13 +1,25 @@
-# Kodafreight 0.1.0
+# Kodafreight 0.2.0
 
-A multi-tenant **SMS SaaS platform** for **Frappe Framework / ERPNext v16**, reimplementing
-(and hardening) the SMS subsystem of an existing Laravel 10 freight-management SaaS.
+A multi-tenant **freight forwarding + SMS platform** for **Frappe Framework / ERPNext v16**,
+reimplementing (and hardening) an existing Laravel 10 freight-management SaaS.
+
+Two modules:
+
+* **SMS** - clients, sender names, SMS numbers, providers, plans, credits, campaigns,
+  messages, delivery logs, reports and dashboard.
+* **Freight Operations** - Cargo Loads (CBM), Containers, Freight Tariffs, Sales Invoices,
+  Payment Entry, Release Orders, Delivery Orders, Customer Statement and CBM Record.
+  See [`docs/FREIGHT_MODULE.md`](docs/FREIGHT_MODULE.md) for the flow and the Laravel mapping.
+
+Highlights:
 
 * Platform administrator manages clients, sender names, SMS numbers, providers, plans and credits.
 * Every client is an isolated tenant with its own users, contacts, sender names, credits,
-  messages, campaigns, reports and dashboard.
+  messages, campaigns, customers, cargo loads, containers, invoices and reports.
 * SMS is delivered through **Kilakona** (the provider used by the legacy system), with a second
   driver for the older `messaging-service.co.tz` broker.
+* Freight money lives in ERPNext: Sales Invoice + Payment Entry, so "Partly Paid" is a fact,
+  not a label, and a release order cannot be printed before the balance reaches zero.
 
 ---
 
@@ -24,9 +36,9 @@ bench build --app kodafreight
 bench restart
 ```
 
-Requirements: Frappe Framework v16 (ERPNext v16 optional — Kodafreight does not depend on it),
-Python ≥ 3.10, MariaDB 10.6+, Redis, a running scheduler (`bench enable-scheduler`) and at
-least one background worker.
+Requirements: Frappe Framework v16 **and ERPNext v16** (`required_apps = ["frappe/erpnext"]`;
+freight invoicing uses Sales Invoice + Payment Entry), Python ≥ 3.10, MariaDB 10.6+, Redis, a
+running scheduler (`bench enable-scheduler`) and at least one background worker.
 
 ### First-run configuration
 

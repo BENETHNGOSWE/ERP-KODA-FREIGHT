@@ -138,3 +138,78 @@ def contact_has_permission(doc, ptype=None, user=None):
         ):
             return False
     return True
+
+
+# ==============================================================================
+# FREIGHT
+# ==============================================================================
+# Every freight doctype carries a `client` link, so the generic factory above covers
+# them. ERPNext's own `Customer` and `Sales Invoice` need their own conditions because
+# they link the tenant through `Customer.kf_client` instead of a `client` column - the
+# same reason the Laravel `Customer::all()` leaked.
+# ==============================================================================
+
+cargo_load_query = build_query_conditions("Kodafreight Cargo Load")
+container_query = build_query_conditions("Kodafreight Container")
+freight_tariff_query = build_query_conditions("Kodafreight Freight Tariff")
+release_order_query = build_query_conditions("Kodafreight Release Order")
+delivery_order_query = build_query_conditions("Kodafreight Delivery Order")
+load_type_query = build_query_conditions("Kodafreight Load Type")
+unit_type_query = build_query_conditions("Kodafreight Unit Type")
+
+
+def _tenant_customer_filter(alias="`tabCustomer`"):
+    return (
+        f"{alias}.`name` in (select name from `tabCustomer` "
+        f"where kf_client = {{client}})"
+    )
+
+
+def customer_query_conditions(user=None):
+    """Tenant users only see the Customers that belong to their client."""
+    user = user or frappe.session.user
+    if is_platform_admin(user):
+        return ""
+    client = get_user_client(user)
+    if not client:
+        return "`tabCustomer`.`name` = '__no_customer__'"
+    return _tenant_customer_filter().format(client=frappe.db.escape(client))
+
+
+def sales_invoice_query_conditions(user=None):
+    """Sales Invoices are visible only when their customer is in the tenant."""
+    user = user or frappe.session.user
+    if is_platform_admin(user):
+        return ""
+    client = get_user_client(user)
+    if not client:
+        return "`tabSales Invoice`.`name` = '__no_invoice__'"
+    return (
+        "`tabSales Invoice`.`customer` in (select name from `tabCustomer` "
+        f"where kf_client = {frappe.db.escape(client)})"
+    )
+
+
+def customer_has_permission(doc, ptype=None, user=None):
+    user = user or frappe.session.user
+    if is_platform_admin(user):
+        return True
+    client = get_user_client(user)
+    if not client:
+        return False
+    doc_client = doc.get("kf_client") if hasattr(doc, "get") else None
+    # A customer with no tenant yet is platform-owned; a tenant user may not claim it.
+    return doc_client == client
+
+
+def sales_invoice_has_permission(doc, ptype=None, user=None):
+    user = user or frappe.session.user
+    if is_platform_admin(user):
+        return True
+    client = get_user_client(user)
+    if not client:
+        return False
+    customer = doc.get("customer") if hasattr(doc, "get") else None
+    if not customer:
+        return False
+    return frappe.db.get_value("Customer", customer, "kf_client") == client
