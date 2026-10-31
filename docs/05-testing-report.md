@@ -159,30 +159,31 @@ Three defects were found and fixed **by this run only** — see `docs/06-bugs-fi
 G, H, I. They were invisible to the offline harness because it imports modules by file
 path and never exercises `frappe.model.sync` or the hooks registry.
 
-### 4.2 `bench run-tests --app kodafreight` — 19 tests, 17 passed, 2 failed
+### 4.2 `bench run-tests --app kodafreight` — 21 tests, 21 passed
 
 | Module | Result |
 |---|---|
 | `test_credits` | 4 / 4 pass |
 | `test_sms` | 8 / 8 pass |
 | `test_webhooks` | 2 / 2 pass |
-| `test_tenant_isolation` | 3 / 5 pass |
+| `test_tenant_isolation` | 3 / 5 pass (first run) → 5 / 5 after the fix, +2 new tests |
 
 The two failures (`test_client_cannot_list_other_client_messages`,
-`test_client_only_sees_own_sender_names`) were **defects in the tests, not the app**: both
+`test_client_only_sees_own_sender_names`) used an inappropriate permission-bypassing API; the failures alone did not establish an app defect: both
 called `frappe.get_all`, whose own v16 docstring reads *"Will **not** check for
 permissions."* `frappe.get_list` is the permission-aware API. Corrected, and two stricter
 tests added (`test_client_cannot_list_other_clients`,
-`test_client_api_rejects_foreign_client_argument`, the latter exercising the whitelisted
-`api.sms.message_history` path end to end). The suite is now **21 tests**.
+`test_client_api_rejects_foreign_client_argument`, the latter calling the whitelisted
+`api.sms.message_history` function directly). The suite is now **21 tests**.
 
-An audit of every `frappe.get_all` in production code confirmed each client-reachable
-call passes `filters={"client": resolve_client(...)}`, and `resolve_client()` does not
-accept a client that differs from the caller's own (`PermissionError`), so the
-permission-bypassing API is never reachable with unfiltered tenant data.
+The examined client dashboard and message history calls apply a client filter after
+`resolve_client()`, which rejects another tenant. Passing these tests does not prove
+all endpoints or HTTP request paths secure; a broader security review remains necessary.
 
-> Honest status: the corrected suite has been pushed but **has not been re-run** at the
-> time of writing. The 2 failures above are the only ones observed so far.
+**Re-run after the fix: `Ran 21 tests in 2.956s — OK`.** All 21 pass, including the two
+new isolation tests that call the whitelisted API function directly. The app's own test suite is
+therefore green on the target platform (Frappe 16.32.0 / bench 5.31.1), not just on the
+offline stub.
 
 ### 4.3 Known stub limitation
 

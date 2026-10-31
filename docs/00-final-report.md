@@ -139,7 +139,7 @@ encoding/segmentation (5), phone normalisation (3), provider drivers and status 
 credit ledger (7), tenant isolation and sender ownership (5), dispatch incl. retries, refunds,
 idempotent delivery reports and immutability (12), campaigns (4), client and contact rules (7).
 
-The static validator catches what `bench migrate` would reject: JSON/field-order integrity,
+The static validator checks selected issues that can affect migration: JSON/field-order integrity,
 Link/Table targets, child-table flags, Select defaults, autoname fields, controller class names,
 every dotted path in `hooks.py`, workspace/report/card references, `frm.call` targets, Python
 syntax, and committed secrets.
@@ -147,17 +147,15 @@ syntax, and committed secrets.
 Also shipped: `kodafreight/tests/` — four `FrappeTestCase` suites (credits, SMS dispatch, tenant
 isolation, webhooks) for `bench --site <site> run-tests --app kodafreight`.
 
-**Honest limitation:** this sandbox has no MariaDB/Redis/bench and no browser, so the bench test
-run and a real browser screenshot could not be produced here. Nothing is claimed as verified
-beyond the three commands above.
+**Real bench:** the user successfully installed the app on Frappe 16.32.0 and verified 20 DocTypes, four cards, one chart and four roles. After correcting two tests that bypassed permissions, the user reported `Ran 21 tests in 2.956s — OK`. These tests do not establish complete security or live SMS delivery. A real browser smoke test and live provider integration remain unverified. The dashboard visual is not a browser screenshot.
 
 ---
 
 ## 6. Bugs found and fixed
 
 `docs/06-bugs-fixed.md` lists **24 defects in the Laravel system** with file references and the
-test that now covers the fix, plus **9 defects found during Kodafreight's own bug hunt** — six
-found in the offline harness, and three (G–I) found only on a **real Frappe 16 bench**: a missing
+test that now covers the fix, plus **11 internal issues documented (A–K)** — six
+earlier issues, three (G–I) found on a **real Frappe 16 bench**, and two test/harness limitations (J–K): a missing
 module `__init__.py` that aborted `bench install-app`, number cards/dashboard charts that were
 never imported because `importable_doctypes` was not declared, and a Workspace with a null `app`
 field. All three are fixed and the validator now guards against them.
@@ -186,18 +184,10 @@ queue claim, and manual credit transactions that could have bypassed the ledger.
 ## 7. Installation
 
 ```bash
-cd ~/frappe-bench
-unzip kodafreight-v0.1.zip -d /tmp
-bench get-app kodafreight /tmp/kodafreight
-bench --site <site-name> install-app kodafreight
-bench --site <site-name> migrate
-bench --site <site-name> clear-cache
-bench build --app kodafreight
-bench --site <site-name> enable-scheduler
-bench restart
-
-# verify
-bench --site <site-name> run-tests --app kodafreight
+cd ~/frappe-v16
+bench get-app https://github.com/BENETHNGOSWE/ERP-KODA-FREIGHT.git
+bench --site kodafreight.localhost install-app kodafreight
+bench --site kodafreight.localhost run-tests --app kodafreight
 ```
 
 Then: enter the Kilakona credentials in **Kodafreight SMS Provider**, create sender names, create a
