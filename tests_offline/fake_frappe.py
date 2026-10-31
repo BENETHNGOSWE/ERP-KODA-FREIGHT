@@ -624,6 +624,10 @@ frappe.get_doc = get_doc
 frappe.get_cached_doc = get_cached_doc
 frappe.get_single = get_single
 frappe.get_all = get_all
+# NOTE: this stub does not implement Frappe's permission_query_conditions / User Permission
+# filtering, so `get_list` behaves like `get_all` here. Documented limitation: an isolation
+# test that relies on frappe.get_list filtering cannot be validated offline. Verified on a
+# real Frappe 16 bench (see docs/05-testing-report.md).
 frappe.get_list = get_all
 frappe.get_roles = get_roles
 frappe.only_for = only_for

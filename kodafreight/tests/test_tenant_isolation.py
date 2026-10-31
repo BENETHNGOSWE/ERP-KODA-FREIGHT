@@ -30,7 +30,9 @@ class TestTenantIsolation(KodafreightTestCase):
 
         user_a = self.make_user(a, "_test_kf_a@example.com")
         frappe.set_user(user_a)
-        rows = frappe.get_all("Kodafreight SMS Message", fields=["name", "client"])
+        # `frappe.get_all` deliberately bypasses permissions (frappe v16 docstring), so the
+        # tenant-filtered API a portal/report actually uses is `frappe.get_list`.
+        rows = frappe.get_list("Kodafreight SMS Message", fields=["name", "client"])
         self.assertTrue(rows)
         self.assertTrue(all(r.client == a for r in rows))
 
@@ -47,7 +49,7 @@ class TestTenantIsolation(KodafreightTestCase):
     def test_client_only_sees_own_sender_names(self):
         a = self.clients[CLIENT_A]
         frappe.set_user(self.make_user(a, "_test_kf_a@example.com"))
-        senders = frappe.get_all("Kodafreight Sender Name", pluck="name")
+        senders = frappe.get_list("Kodafreight Sender Name", pluck="name")
         self.assertIn("TESTA", senders)
         self.assertNotIn("TESTB", senders)
 
@@ -70,3 +72,31 @@ class TestTenantIsolation(KodafreightTestCase):
         user = frappe.db.get_value("Kodafreight Client User", email, "user")
         self.assertTrue(frappe.db.exists("User Permission", {
             "user": user, "allow": "Kodafreight Client", "for_value": a}))
+
+    def test_client_cannot_list_other_clients(self):
+        a = self.clients[CLIENT_A]
+        self.make_user(a, "_test_kf_a@example.com")
+        frappe.set_user("_test_kf_a@example.com")
+        names = frappe.get_list("Kodafreight Client", pluck="name")
+        self.assertEqual(names, [a])
+
+    def test_client_api_rejects_foreign_client_argument(self):
+        """The whitelisted API must not honour a client passed in the payload."""
+        from kodafreight.api import sms as sms_api
+
+        a, b = self.clients[CLIENT_A], self.clients[CLIENT_B]
+        stub_provider(True)
+        dispatcher.queue_message(b, "0745788799", "secret", send_now=True)
+        dispatcher.queue_message(a, "0745788788", "mine", send_now=True)
+        frappe.db.commit()
+
+        self.make_user(a, "_test_kf_a@example.com")
+        frappe.set_user("_test_kf_a@example.com")
+
+        with self.assertRaises(frappe.PermissionError):
+            sms_api.message_history(client=b)
+
+        returned = {r["name"] for r in sms_api.message_history()}
+        b_messages = set(frappe.get_all("Kodafreight SMS Message",
+                                        filters={"client": b}, pluck="name"))
+        self.assertFalse(returned & b_messages, "client API leaked another tenant's message")

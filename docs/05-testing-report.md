@@ -128,15 +128,64 @@ grepped for).
 
 ---
 
-## 4. Still to be executed on your bench (Phase 16)
+## 4. Real Frappe 16 bench run (executed)
 
-```bash
-bench --site <site> install-app kodafreight
-bench --site <site> migrate
-bench --site <site> run-tests --app kodafreight
+Environment: Frappe **16.32.0**, bench **5.31.1**, app installed with
+`bench get-app kodafreight https://github.com/BENETHNGOSWE/ERP-KODA-FREIGHT` then
+`bench --site kodafreight.localhost install-app kodafreight`.
+
+### 4.1 Installation — PASS
+
+```
+Updating DocTypes for kodafreight   : [========================================] 100%
+Kodafreight 0.1.0 installed.
+Creating Workspace Sidebars
+Creating Sidebar Items for Kodafreight
+Creating Desktop Icons
+Updating Dashboard for kodafreight
 ```
 
-Expected: DocTypes created, four roles present, the Kodafreight workspace visible, and the
-bench test suites green. If `run-tests` reports a failure it will be environmental
-(e.g. a missing default provider record) rather than logical — the same assertions already
-pass offline.
+Post-install verification in `bench console`:
+
+| Query | Expected | Actual |
+|---|---|---|
+| `len(get_all("DocType", {"module": "Kodafreight"}))` | 20 | **20** |
+| Number Cards | 4 | **4** (Sent, Failed, Pending, Delivered) |
+| Dashboard Charts | 1 | **1** (Kodafreight SMS Volume) |
+| Roles `Kodafreight%` | 4 | **4** |
+| `kodafreight.__version__` | 0.1.0 | **0.1.0** |
+
+Three defects were found and fixed **by this run only** — see `docs/06-bugs-fixed.md`
+G, H, I. They were invisible to the offline harness because it imports modules by file
+path and never exercises `frappe.model.sync` or the hooks registry.
+
+### 4.2 `bench run-tests --app kodafreight` — 19 tests, 17 passed, 2 failed
+
+| Module | Result |
+|---|---|
+| `test_credits` | 4 / 4 pass |
+| `test_sms` | 8 / 8 pass |
+| `test_webhooks` | 2 / 2 pass |
+| `test_tenant_isolation` | 3 / 5 pass |
+
+The two failures (`test_client_cannot_list_other_client_messages`,
+`test_client_only_sees_own_sender_names`) were **defects in the tests, not the app**: both
+called `frappe.get_all`, whose own v16 docstring reads *"Will **not** check for
+permissions."* `frappe.get_list` is the permission-aware API. Corrected, and two stricter
+tests added (`test_client_cannot_list_other_clients`,
+`test_client_api_rejects_foreign_client_argument`, the latter exercising the whitelisted
+`api.sms.message_history` path end to end). The suite is now **21 tests**.
+
+An audit of every `frappe.get_all` in production code confirmed each client-reachable
+call passes `filters={"client": resolve_client(...)}`, and `resolve_client()` does not
+accept a client that differs from the caller's own (`PermissionError`), so the
+permission-bypassing API is never reachable with unfiltered tenant data.
+
+> Honest status: the corrected suite has been pushed but **has not been re-run** at the
+> time of writing. The 2 failures above are the only ones observed so far.
+
+### 4.3 Known stub limitation
+
+`tests_offline/fake_frappe.py` aliases `frappe.get_list = get_all`, so it cannot exercise
+permission filtering. Any isolation assertion that depends on `frappe.get_list` is
+verified **only** on a real bench. This is now noted in the stub itself.
