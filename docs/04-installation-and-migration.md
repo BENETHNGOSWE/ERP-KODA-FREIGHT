@@ -16,12 +16,17 @@
 ```bash
 cd ~/frappe-bench
 
-# option A - from the delivered archive
-unzip kodafreight-v0.1.zip -d /tmp
-bench get-app kodafreight /tmp/kodafreight
-
-# option B - from git
+# option A - from git (needs network access to the host)
 bench get-app kodafreight https://<your-git-host>/kodafreight.git
+
+# option B - offline, from the delivered .bundle (recommended for air-gapped / flaky DNS)
+mkdir -p ~/src && git clone /path/to/kodafreight.bundle ~/src/kodafreight
+bench get-app ~/src/kodafreight
+
+# option C - offline, from the delivered .zip
+mkdir -p ~/src && cd ~/src && unzip -q /path/to/kodafreight-v0.1.zip
+cd ~/src/kodafreight && git init -q && git add -A && git commit -qm "kodafreight v0.1.0"
+cd ~/frappe-bench && bench get-app ~/src/kodafreight
 
 bench --site <site-name> install-app kodafreight
 bench --site <site-name> migrate
@@ -29,6 +34,22 @@ bench --site <site-name> clear-cache
 bench build --app kodafreight
 bench --site <site-name> enable-scheduler
 bench restart
+```
+
+> **Why the `git init` in option C?** `bench get-app` always runs
+> `git clone <url> --depth 1 --origin upstream` — even for a local folder. A directory that
+> is not a git repository therefore fails with `fatal: not a git repository`. Options B and C
+> both satisfy that requirement; the `.bundle` keeps the commit history, the `.zip` does not.
+> `bench get-app` accepts a local path because bench resolves an existing absolute path
+> (`AppMeta.mount_path`), reads `pyproject.toml` for the package name, and `git clone`s from
+> that path — no remote is required afterwards.
+
+If `bench get-app` cannot reach PyPI for the build backend, install the package directly:
+
+```bash
+cd ~/frappe-bench
+./env/bin/pip install -e ./apps/kodafreight --no-build-isolation
+bench --site <site-name> install-app kodafreight
 ```
 
 `after_install` creates:
