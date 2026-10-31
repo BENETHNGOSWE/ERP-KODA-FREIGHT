@@ -27,12 +27,31 @@ def after_install():
 
 
 def after_migrate():
-    create_roles()
-    create_settings()
-    # Idempotent: guarantees the freight fields/items exist after every `bench migrate`,
-    # so a fresh deploy does not silently miss the ERPNext integration pieces.
-    setup_freight()
+    # Every step is idempotent, and none of them is allowed to abort `bench migrate`:
+    # a failed provisioning step is logged and reported, and the site still migrates.
+    safe(create_roles, "create roles")
+    safe(create_settings, "create settings")
+    safe(setup_freight, "freight setup")
     frappe.db.commit()
+
+
+def safe(step, label):
+    """Run a provisioning step, log instead of raising.
+
+    `bench migrate` runs this through `post_schema_updates`; an exception here aborts the
+    entire migration with a stack trace that looks like a framework failure even though the
+    schema is already updated. Provisioning is best-effort by design.
+    """
+    try:
+        step()
+    except Exception:
+        frappe.db.rollback()
+        frappe.log_error(
+            title="Kodafreight setup step failed: {0}".format(label),
+            message=frappe.get_traceback(),
+        )
+        print("Kodafreight: '{0}' failed - see Error Log. Run `bench --site <site> "
+              "execute kodafreight.install.setup_freight` to retry.".format(label))
 
 
 def setup_freight():
@@ -40,14 +59,16 @@ def setup_freight():
     if not frappe.db.exists("DocType", "Sales Invoice"):
         print("ERPNext not installed - freight invoicing will not work until it is.")
         return
-    create_uoms()
-    create_freight_items()
-    create_freight_custom_fields()
-    create_freight_reference_data()
+    safe(create_uoms, "UOMs")
+    safe(create_freight_items, "freight items")
+    safe(create_freight_custom_fields, "custom fields")
+    safe(create_freight_reference_data, "reference data")
 
 
 def create_uoms():
-    for uom in ("Cubic Meter", "Kilogram"):
+    # "Nos" and "Kilogram" ship with ERPNext; "Cubic Meter" usually does not, and the
+    # freight invoice rows price in m³.
+    for uom in ("Cubic Meter", "Kilogram", "Nos"):
         if not frappe.db.exists("UOM", uom):
             frappe.get_doc({"doctype": "UOM", "uom_name": uom, "enabled": 1}).insert(
                 ignore_permissions=True
@@ -62,11 +83,7 @@ def create_freight_items():
     """
     if not frappe.db.exists("DocType", "Item"):
         return
-    item_group = (
-        "Services"
-        if frappe.db.exists("Item Group", "Services")
-        else frappe.db.get_value("Item Group", {"is_group": 1}, "name")
-    )
+    item_group = ensure_item_group()
     defaults = [
         ("Freight Charges", "Freight charges per cubic metre", "Cubic Meter"),
         ("Transport Charges", "Trucking / transport fee", "Nos"),
@@ -74,6 +91,8 @@ def create_freight_items():
     for item_code, description, uom in defaults:
         if frappe.db.exists("Item", item_code):
             continue
+        if not frappe.db.exists("UOM", uom):
+            uom = frappe.db.get_value("UOM", {"enabled": 1}, "name") or uom
         frappe.get_doc({
             "doctype": "Item",
             "item_code": item_code,
@@ -86,6 +105,34 @@ def create_freight_items():
             "stock_uom": uom,
             "include_item_in_manufacturing": 0,
         }).insert(ignore_permissions=True)
+
+
+def ensure_item_group():
+    """Return a usable (non-group) Item Group for the freight service items.
+
+    The previous version guessed with `get_value("Item Group", {"is_group": 1})`, which can
+    return `None` on a freshly installed ERPNext - and `Item.item_group` is mandatory, so
+    `bench migrate` died with `MandatoryError: [Item, ...]: item_group`.
+    """
+    for candidate in ("Freight Services", "Services", "Products"):
+        if frappe.db.exists("Item Group", candidate):
+            if not frappe.db.get_value("Item Group", candidate, "is_group"):
+                return candidate
+
+    parent = None
+    for candidate in ("All Item Groups", "Services", "Products"):
+        if frappe.db.exists("Item Group", candidate):
+            parent = candidate
+            break
+
+    doc = frappe.get_doc({
+        "doctype": "Item Group",
+        "item_group_name": "Freight Services",
+        "parent_item_group": parent or "",
+        "is_group": 0,
+    })
+    doc.insert(ignore_permissions=True)
+    return doc.name
 
 
 def create_freight_custom_fields():
