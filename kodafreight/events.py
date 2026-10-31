@@ -11,6 +11,10 @@ def on_message_created(doc, method=None):
         return
     if doc.campaign:
         return  # campaigns are dispatched by their own worker
+    if getattr(frappe.flags, "in_test", False):
+        # Never enqueue from inside a test: the suite rolls back, so the job would outlive the
+        # row it refers to, and a synchronous send_now=True in the same test would send twice.
+        return
     if not frappe.db.get_single_value("Kodafreight Settings", "dispatch_enabled"):
         return
     frappe.enqueue(
