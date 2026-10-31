@@ -9,6 +9,11 @@ app_version = "0.1.0"
 # Frappe / ERPNext version 16
 required_apps = []
 
+# Ship dashboard records that live outside a doctype folder. Frappe's module sync only walks
+# `IMPORTABLE_DOCTYPES` plus whatever an app adds here, so without these two entries the
+# number cards and the volume chart would never be imported on install/migrate.
+importable_doctypes = ["Number Card", "Dashboard Chart"]
+
 # ------------------------------------------------------------------------------
 # Assets
 # ------------------------------------------------------------------------------

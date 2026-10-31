@@ -156,7 +156,11 @@ beyond the three commands above.
 ## 6. Bugs found and fixed
 
 `docs/06-bugs-fixed.md` lists **24 defects in the Laravel system** with file references and the
-test that now covers the fix, plus **6 defects found during Kodafreight's own bug hunt**.
+test that now covers the fix, plus **9 defects found during Kodafreight's own bug hunt** — six
+found in the offline harness, and three (G–I) found only on a **real Frappe 16 bench**: a missing
+module `__init__.py` that aborted `bench install-app`, number cards/dashboard charts that were
+never imported because `importable_doctypes` was not declared, and a Workspace with a null `app`
+field. All three are fixed and the validator now guards against them.
 The most serious ones:
 
 1. `sendMessage()` called with two arguments against a three-argument signature — fatal error.

@@ -271,10 +271,22 @@
  "module": "Kodafreight",
  "name": "Kodafreight",
  "number_cards": [
-  {"label": "Messages Sent", "number_card_name": "Kodafreight Messages Sent"},
-  {"label": "Messages Delivered", "number_card_name": "Kodafreight Messages Delivered"},
-  {"label": "Messages Failed", "number_card_name": "Kodafreight Messages Failed"},
-  {"label": "Messages Pending", "number_card_name": "Kodafreight Messages Pending"}
+  {
+   "label": "Messages Sent",
+   "number_card_name": "Kodafreight Messages Sent"
+  },
+  {
+   "label": "Messages Delivered",
+   "number_card_name": "Kodafreight Messages Delivered"
+  },
+  {
+   "label": "Messages Failed",
+   "number_card_name": "Kodafreight Messages Failed"
+  },
+  {
+   "label": "Messages Pending",
+   "number_card_name": "Kodafreight Messages Pending"
+  }
  ],
  "owner": "Administrator",
  "parent_page": "",
@@ -312,5 +324,6 @@
    "type": "DocType"
   }
  ],
- "title": "Kodafreight"
+ "title": "Kodafreight",
+ "app": "kodafreight"
 }

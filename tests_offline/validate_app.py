@@ -275,6 +275,36 @@ if (PKG / "modules.txt").read_text().strip() != "Kodafreight":
 if "__version__" not in (PKG / "__init__.py").read_text():
     err("__init__.py must define __version__")
 
+# ------------------------------------------- structural packaging checks
+# Regression guard for the bug that broke `bench install-app`:
+# a package directory without __init__.py imports as a namespace package whose
+# __file__ is None, and frappe.model.sync does os.path.dirname(None).
+_bad_pkgs = set()
+for path in sorted(APP.rglob("*.py")):
+    rel = path.relative_to(APP)
+    if any(part in {".git", "__pycache__", "tests_offline"} for part in rel.parts):
+        continue
+    for parent in [path.parent, *path.parent.parents]:
+        if parent == APP or APP not in parent.parents:
+            break
+        if not (parent / "__init__.py").exists():
+            _bad_pkgs.add(parent.relative_to(APP))
+            break
+for _p in sorted(_bad_pkgs):
+    err(f"package dir without __init__.py: {_p}")
+
+hooks_src = (PKG / "hooks.py").read_text()
+for folder, dt in (("number_card", "Number Card"), ("dashboard_chart", "Dashboard Chart")):
+    if (PKG / "kodafreight" / folder).is_dir() and dt not in hooks_src:
+        err(f"{folder}/ present but hooks.importable_doctypes lacks '{dt}'")
+
+ws = PKG / "kodafreight" / "workspace" / "kodafreight" / "kodafreight.json"
+if ws.exists():
+    import json as _json
+    _ws = _json.loads(ws.read_text())
+    if _ws.get("app") != "kodafreight":
+        err("workspace/kodafreight.json must set app = 'kodafreight'")
+
 # ---------------------------------------------------------------- report
 print(f"DocTypes validated : {len(doctypes)}")
 print(f"Warnings           : {len(warnings)}")
