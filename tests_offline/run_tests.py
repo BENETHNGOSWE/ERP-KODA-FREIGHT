@@ -814,6 +814,55 @@ def test_payment_state_reports_the_real_numbers():
     eq(round(state["grand_total"] - state["outstanding_amount"], 2), 300.00, "received")
 
 
+# ---------------------------------------------------------------- print context safety
+from kodafreight import freight_events  # noqa: E402
+
+
+class _BrokenDB:
+    """Every database call fails, like a wrong column name on a real bench."""
+
+    def __getattr__(self, item):
+        def boom(*args, **kwargs):
+            raise Exception("(1054, \"Unknown column 'company_address' in 'SELECT'\")")
+
+        return boom
+
+
+def _doc(**kw):
+    base = {"doctype": "Sales Invoice", "name": "SI-1", "company": "KODA", "customer": "CUST-1"}
+    base.update(kw)
+    return frappe._dict(base)
+
+
+def test_print_context_swallows_database_errors():
+    """A bad letterhead lookup must degrade to blank lines, never to a 500 page."""
+    original_db = frappe.db
+    original_log = frappe.log_error
+    frappe.db = _BrokenDB()
+    frappe.log_error = lambda *a, **k: None
+    try:
+        doc = _doc()
+        freight_events.set_invoice_print_context(doc)   # must not raise
+        freight_events.set_freight_print_context(doc)   # must not raise
+    finally:
+        frappe.db = original_db
+        frappe.log_error = original_log
+
+
+def test_print_context_accepts_the_extra_print_settings_argument():
+    """Frappe calls before_print with (doc, method, print_settings)."""
+    freight_events.set_freight_print_context(_doc(), "before_print", {"with_letterhead": 0})
+    freight_events.set_invoice_print_context(_doc(), "before_print", {"with_letterhead": 0})
+
+
+def test_print_context_does_not_query_a_missing_company_address_column():
+    """ERPNext has no Company.company_address column - the lookup must not ask for it."""
+    import inspect
+
+    source = inspect.getsource(freight_events._company_address)
+    assert "tabAddress" in source and "Dynamic Link" in source, source
+
+
 # Register the freight tests declared above (they are written as plain functions so the
 # file reads like documentation, then collected here in declaration order).
 for _name, _fn in list(globals().items()):

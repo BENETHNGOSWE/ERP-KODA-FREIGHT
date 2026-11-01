@@ -77,11 +77,57 @@ def apply_invoice_pricing(doc, method=None, *args, **kwargs):
                 break
 
 
+def _safe(value, default=""):
+    return value if value not in (None, "") else default
+
+
+def _company_address(company):
+    """Postal address of a Company.
+
+    ERPNext keeps addresses in the `Address` doctype, linked to the Company through
+    `Dynamic Link` - there is no `Company.company_address` column. Asking for that column
+    is what produced
+        MySQLdb.OperationalError: (1054, "Unknown column 'company_address' in 'SELECT'")
+    on a real bench, so the lookup is done against the address table and every step is
+    individually guarded.
+    """
+    try:
+        rows = frappe.db.sql(
+            """
+            select a.address_line1, a.address_line2, a.city, a.state, a.country
+            from `tabAddress` a
+            inner join `tabDynamic Link` dl
+                    on dl.parent = a.name and dl.parenttype = 'Address'
+            where dl.link_doctype = 'Company' and dl.link_name = %s
+            order by a.is_primary_address desc, a.modified desc
+            limit 1
+            """,
+            (company,),
+            as_dict=True,
+        )
+        if rows:
+            row = rows[0]
+            parts = [
+                row.get("address_line1"),
+                row.get("address_line2"),
+                row.get("city"),
+                row.get("state"),
+                row.get("country"),
+            ]
+            return ", ".join([part for part in parts if part])
+    except Exception:
+        frappe.log_error(
+            title="Kodafreight: company address lookup failed",
+            message=frappe.get_traceback(),
+        )
+    return ""
+
+
 def _fill_company_context(doc, company=None):
     """Resolve letterhead details in Python so the Jinja templates stay dumb."""
     from kodafreight.services.freight import default_company
 
-    company = company or doc.get("company")
+    company = doc.get("company") or company
     if not company:
         try:
             company = default_company()
@@ -89,23 +135,24 @@ def _fill_company_context(doc, company=None):
             company = None
     if not company or not frappe.db.exists("Company", company):
         return
+
     row = frappe.db.get_value(
         "Company", company, ["company_name", "phone_no", "tax_id"], as_dict=True
     ) or {}
-    doc.kf_company_name = row.get("company_name") or company
-    doc.kf_company_phone = row.get("phone_no") or ""
-    doc.kf_company_tin = row.get("tax_id") or ""
-    address = frappe.db.get_value("Company", company, "company_address") or ""
-    doc.kf_company_address = address or ""
+    doc.kf_company_name = _safe(row.get("company_name"), company)
+    doc.kf_company_phone = _safe(row.get("phone_no"))
+    doc.kf_company_tin = _safe(row.get("tax_id"))
+    doc.kf_company_address = _company_address(company)
 
 
 def _fill_customer_phone(doc):
     customer = doc.get("customer")
     if not customer:
         return
-    doc.kf_customer_phone = (
-        frappe.db.get_value("Customer", customer, "mobile_no") or ""
-    )
+    try:
+        doc.kf_customer_phone = _safe(frappe.db.get_value("Customer", customer, "mobile_no"))
+    except Exception:
+        doc.kf_customer_phone = ""
 
 
 def set_freight_print_context(doc, method=None, print_settings=None, *args, **kwargs):
@@ -113,11 +160,19 @@ def set_freight_print_context(doc, method=None, print_settings=None, *args, **kw
 
     Frappe calls this as `doc.run_method("before_print", print_settings)`, i.e. with the
     print settings as an extra positional argument - accepting only (doc, method) breaks it
-    with `TypeError: takes from 1 to 2 positional arguments but 3 were given`. The trailing
-    *args/**kwargs keeps this safe across Frappe versions.
+    with `TypeError: takes from 1 to 2 positional arguments but 3 were given`.
+
+    The whole body is failure-tolerant: a broken letterhead detail must degrade to a blank
+    line on the paper, never to a 500 page that stops the user from printing at all.
     """
-    _fill_company_context(doc)
-    _fill_customer_phone(doc)
+    try:
+        _fill_company_context(doc)
+        _fill_customer_phone(doc)
+    except Exception:
+        frappe.log_error(
+            title="Kodafreight: print context failed ({0})".format(doc.doctype),
+            message=frappe.get_traceback(),
+        )
 
 
 def set_invoice_print_context(doc, method=None, print_settings=None, *args, **kwargs):
@@ -131,6 +186,16 @@ def set_invoice_print_context(doc, method=None, print_settings=None, *args, **kw
     company letterhead, TIN and bank details are resolved here - in normal Python - and the
     template only prints plain fields.
     """
+    try:
+        _build_invoice_print_context(doc)
+    except Exception:
+        frappe.log_error(
+            title="Kodafreight: invoice print context failed",
+            message=frappe.get_traceback(),
+        )
+
+
+def _build_invoice_print_context(doc):
     if not frappe.db.exists("Sales Invoice", doc.name or ""):
         return
 
@@ -138,12 +203,15 @@ def set_invoice_print_context(doc, method=None, print_settings=None, *args, **kw
     _fill_company_context(doc, company)
     _fill_customer_phone(doc)
 
-    banks = frappe.get_all(
-        "Bank Account",
-        filters={"is_company_account": 1, "company": company} if company else {},
-        fields=["bank", "account_name", "account_no", "iban"],
-        limit=3,
-    )
+    try:
+        banks = frappe.get_all(
+            "Bank Account",
+            filters={"is_company_account": 1, "company": company} if company else {},
+            fields=["bank", "account_name", "account_no", "iban"],
+            limit=3,
+        )
+    except Exception:
+        banks = []
     lines = []
     for bank in banks:
         lines.append(
