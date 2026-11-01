@@ -6,7 +6,7 @@
    "label": "SMS Volume (last 30 days)"
   }
  ],
- "content": "[{\"id\": \"kf_hdr_freight\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\">Freight Operations</span>\", \"col\": 12}}, {\"id\": \"kf_sc_freight_ops\", \"type\": \"card\", \"data\": {\"card_name\": \"Freight Operations\", \"col\": 4}}, {\"id\": \"kf_sc_freight_move\", \"type\": \"card\", \"data\": {\"card_name\": \"Cargo Movement\", \"col\": 4}}, {\"id\": \"kf_sc_freight_reports\", \"type\": \"card\", \"data\": {\"card_name\": \"Freight Reports\", \"col\": 4}}, {\"id\": \"kf_hdr_ops\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\">SMS Operations</span>\", \"col\": 12}}, {\"id\": \"kf_card_sent\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Kodafreight Messages Sent\", \"col\": 3}}, {\"id\": \"kf_card_delivered\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Kodafreight Messages Delivered\", \"col\": 3}}, {\"id\": \"kf_card_failed\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Kodafreight Messages Failed\", \"col\": 3}}, {\"id\": \"kf_card_pending\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Kodafreight Messages Pending\", \"col\": 3}}, {\"id\": \"kf_chart\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Kodafreight SMS Volume\", \"col\": 12}}, {\"id\": \"kf_sc_sms\", \"type\": \"card\", \"data\": {\"card_name\": \"SMS\", \"col\": 4}}, {\"id\": \"kf_sc_clients\", \"type\": \"card\", \"data\": {\"card_name\": \"Clients\", \"col\": 4}}, {\"id\": \"kf_sc_credits\", \"type\": \"card\", \"data\": {\"card_name\": \"Credits\", \"col\": 4}}, {\"id\": \"kf_sc_contacts\", \"type\": \"card\", \"data\": {\"card_name\": \"Contacts\", \"col\": 4}}, {\"id\": \"kf_sc_config\", \"type\": \"card\", \"data\": {\"card_name\": \"Configuration\", \"col\": 4}}, {\"id\": \"kf_sc_reports\", \"type\": \"card\", \"data\": {\"card_name\": \"Reports\", \"col\": 4}}, {\"id\": \"kf_freight_branch\", \"type\": \"card\", \"data\": {\"card_name\": \"Freight Setup\", \"col\": 4}}]",
+ "content": "[{\"id\": \"kf_hdr_freight\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\">Freight Operations</span>\", \"col\": 12}}, {\"id\": \"kf_sc_freight_ops\", \"type\": \"card\", \"data\": {\"card_name\": \"Freight Operations\", \"col\": 4}}, {\"id\": \"kf_sc_freight_move\", \"type\": \"card\", \"data\": {\"card_name\": \"Cargo Movement\", \"col\": 4}}, {\"id\": \"kf_sc_freight_reports\", \"type\": \"card\", \"data\": {\"card_name\": \"Freight Reports\", \"col\": 4}}, {\"id\": \"kf_hdr_ops\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\">SMS Operations</span>\", \"col\": 12}}, {\"id\": \"kf_card_sent\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Kodafreight Messages Sent\", \"col\": 3}}, {\"id\": \"kf_card_delivered\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Kodafreight Messages Delivered\", \"col\": 3}}, {\"id\": \"kf_card_failed\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Kodafreight Messages Failed\", \"col\": 3}}, {\"id\": \"kf_card_pending\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Kodafreight Messages Pending\", \"col\": 3}}, {\"id\": \"kf_chart\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Kodafreight SMS Volume\", \"col\": 12}}, {\"id\": \"kf_sc_sms\", \"type\": \"card\", \"data\": {\"card_name\": \"SMS\", \"col\": 4}}, {\"id\": \"kf_sc_clients\", \"type\": \"card\", \"data\": {\"card_name\": \"Clients\", \"col\": 4}}, {\"id\": \"kf_sc_credits\", \"type\": \"card\", \"data\": {\"card_name\": \"Credits\", \"col\": 4}}, {\"id\": \"kf_sc_contacts\", \"type\": \"card\", \"data\": {\"card_name\": \"Contacts\", \"col\": 4}}, {\"id\": \"kf_sc_config\", \"type\": \"card\", \"data\": {\"card_name\": \"Configuration\", \"col\": 4}}, {\"id\": \"kf_sc_reports\", \"type\": \"card\", \"data\": {\"card_name\": \"Reports\", \"col\": 4}}, {\"id\": \"kf_freight_branch\", \"type\": \"card\", \"data\": {\"card_name\": \"Freight Setup\", \"col\": 4}}, {\"id\": \"kf_sc_company_setup\", \"type\": \"card\", \"data\": {\"card_name\": \"Company Setup\", \"col\": 4}}, {\"id\": \"kf_sc_docs_money\", \"type\": \"card\", \"data\": {\"card_name\": \"Documents & Money\", \"col\": 4}}]",
  "creation": "2026-08-28 09:00:00.000000",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -373,6 +373,122 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "Company Setup",
+   "link_count": 6,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Staff & Users",
+   "link_count": 0,
+   "link_to": "Kodafreight Client User",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Roles",
+   "link_count": 0,
+   "link_to": "Role",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Branches",
+   "link_count": 0,
+   "link_to": "Kodafreight Branch",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Loads Types",
+   "link_count": 0,
+   "link_to": "Kodafreight Load Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Units",
+   "link_count": 0,
+   "link_to": "Kodafreight Unit Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Freight Tariff",
+   "link_count": 0,
+   "link_to": "Kodafreight Freight Tariff",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Documents & Money",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Company / Invoice Details",
+   "link_count": 0,
+   "link_to": "Company",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Letter Head",
+   "link_count": 0,
+   "link_to": "Letter Head",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Payment Information",
+   "link_count": 0,
+   "link_to": "Bank Account",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Godown (Warehouses)",
+   "link_count": 0,
+   "link_to": "Warehouse",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "Freight Setup",
    "link_count": 1,
    "onboard": 0,
@@ -389,7 +505,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-11-01 10:00:00.000000",
+ "modified": "2026-11-01 11:00:00.000000",
  "modified_by": "Administrator",
  "module": "Kodafreight",
  "name": "Kodafreight",

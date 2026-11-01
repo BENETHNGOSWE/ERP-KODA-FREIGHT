@@ -122,6 +122,24 @@ Standard print formats shipped with the app (all Jinja, editable in the UI):
 
 ---
 
+## 5c. Laravel "Settings" menu -> where it lives now
+
+| Laravel setting (company admin) | Kodafreight / ERPNext | Who can edit |
+|---|---|---|
+| Roles | **Role** (Frappe, global list) + per-staff **Kodafreight Client User → User Role** | Platform admin creates roles; client admin assigns the shipped freight roles |
+| Staffs | **Kodafreight Client User** | Client admin (tenant-scoped by permissions) |
+| Branches | **Kodafreight Branch** | Client admin |
+| Units | **Kodafreight Unit Type** (business view) + **UOM** (ERPNext accounting unit) | Client admin |
+| Loads Types | **Kodafreight Load Type** | Client admin |
+| CBM rate / exchange rate (was per-invoice) | **Kodafreight Freight Tariff** | Client admin |
+| Payment Information (bank accounts) | **Bank Account** (+ **Mode of Payment**) | Client admin (needs Company + Accounts) |
+| Godown Details | **Warehouse** | Client admin |
+| Invoice Details (letterhead) | **Company** (name, TIN, address, logo) + **Letter Head** | Client admin |
+| Active Name / my sender names | **Kodafreight Sender Name** (list is filtered to the senders assigned to your client) | Platform assigns; client sees |
+
+Naming and numbering series, taxes and the chart of accounts come from ERPNext itself
+(**Accounting → Chart of Accounts**, **Selling Settings**).
+
 ## 5b. Editing the shipped workspace
 
 Frappe only re-imports a standard Workspace when the JSON `modified` timestamp is **newer**
