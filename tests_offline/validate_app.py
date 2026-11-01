@@ -186,9 +186,14 @@ for dotted in sorted(set(re.findall(r"\"(kodafreight\.[a-zA-Z0-9_.]+)\"", hooks_
         err(f"hooks.py references missing path: {dotted}")
 
 # Document-event handlers receive extra positional arguments from Frappe
-# (`before_print` gets print_settings as a third argument). A handler with a strict
-# 2-argument signature raises at runtime - this shipped once and broke printing with
+# (`before_print` is called as `doc.run_method("before_print", print_settings)`, so the
+# handler gets doc, method, print_settings). A handler with a strict 2-argument signature
+# raises at runtime - this shipped once and broke all printing with
 # "TypeError: takes from 1 to 2 positional arguments but 3 were given".
+#
+# NOTE: a default value does NOT add positional capacity. `def f(doc, method=None)` still
+# accepts at most two positional arguments, which is exactly why the first attempt at this
+# check let the bug through.
 def _accepts_extra_args(dotted):
     parts = dotted.split(".")
     module_path = PKG.parent / pathlib.Path(*parts[:-1]).with_suffix(".py")
@@ -199,24 +204,25 @@ def _accepts_extra_args(dotted):
         if isinstance(node, ast.FunctionDef) and node.name == parts[-1]:
             if node.args.vararg is not None:
                 return True
-            positional = [
-                a for a in node.args.args if a.arg not in ("self", "cls")
-            ]
-            defaults = len(node.args.defaults)
-            # needs to tolerate at least 3 positional args
-            return len(positional) >= 3 or (len(positional) + defaults) >= 3
+            positional = [a for a in node.args.args if a.arg not in ("self", "cls")]
+            return len(positional) >= 3
     return True
 
 
-for label in ("doc_events", "before_print"):
-    for dotted in sorted(set(re.findall(r"\"(kodafreight\.[a-zA-Z0-9_.]+)\"", hooks_src))):
-        if "freight_events" not in dotted and "events." not in dotted:
-            continue
-        if not _accepts_extra_args(dotted):
-            err(
-                f"doc-event handler {dotted} does not accept the extra positional "
-                f"arguments Frappe passes (add *args, **kwargs)"
-            )
+# Only `before_print` receives the extra argument (doc, method, print_settings);
+# after_insert / on_update / on_submit handlers get (doc, method) and are fine as they are.
+before_print_targets = sorted(set(re.findall(
+    r'"before_print":\s*"([a-zA-Z0-9_.]+)"', hooks_src
+)))
+if not before_print_targets:
+    err("no before_print handlers found - the print context would never be filled")
+
+for dotted in before_print_targets:
+    if not _accepts_extra_args(dotted):
+        err(
+            f"doc-event handler {dotted} does not accept the extra positional arguments "
+            f"Frappe passes (add print_settings=None or *args, **kwargs)"
+        )
 
 # doctype JS / py whitelisted method references from JS
 for folder in DOCTYPE_DIR.iterdir():
