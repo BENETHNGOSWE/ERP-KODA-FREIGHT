@@ -137,8 +137,9 @@ def _fill_company_context(doc, company=None):
         return
 
     row = frappe.db.get_value(
-        "Company", company, ["company_name", "phone_no", "tax_id"], as_dict=True
+        "Company", company, ["company_name", "phone_no", "tax_id", "email"], as_dict=True
     ) or {}
+    doc.kf_company_email = _safe(row.get("email"))
     doc.kf_company_name = _safe(row.get("company_name"), company)
     doc.kf_company_phone = _safe(row.get("phone_no"))
     doc.kf_company_tin = _safe(row.get("tax_id"))
@@ -212,16 +213,29 @@ def _build_invoice_print_context(doc):
         )
     except Exception:
         banks = []
-    lines = []
+    blocks = []
     for bank in banks:
-        lines.append(
+        blocks.append(
             "Bank Name: {0}\nAcc Name: {1}\nAcc No: {2}".format(
                 bank.get("bank") or "-",
                 bank.get("account_name") or "-",
                 bank.get("account_no") or bank.get("iban") or "-",
             )
         )
-    doc.kf_payment_info = "\n\n".join(lines)
+    doc.kf_payment_info = "\n\n".join(blocks)
+
+    # "Prepared / printed by" - the cashier who issued the bill, like the Laravel printout.
+    try:
+        owner = frappe.db.get_value(
+            "User", doc.get("owner") or "", ["full_name", "email", "mobile_no"], as_dict=True
+        ) or {}
+        doc.kf_prepared_by = owner.get("full_name") or doc.get("owner") or ""
+        doc.kf_prepared_contact = ", ".join(
+            [value for value in (owner.get("email"), owner.get("mobile_no")) if value]
+        )
+    except Exception:
+        doc.kf_prepared_by = doc.get("owner") or ""
+        doc.kf_prepared_contact = ""
 
     if not doc.get("kf_cargo_load"):
         for row in doc.get("items") or []:

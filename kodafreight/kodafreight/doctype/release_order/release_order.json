@@ -27,6 +27,7 @@
   "kf_company_name",
   "kf_company_phone",
   "kf_company_tin",
+  "kf_company_email",
   "kf_company_address",
   "kf_customer_phone",
   "legacy_id"
@@ -165,6 +166,12 @@
    "read_only": 1
   },
   {
+   "fieldname": "kf_company_email",
+   "fieldtype": "Data",
+   "label": "Company Email (print)",
+   "read_only": 1
+  },
+  {
    "fieldname": "kf_company_address",
    "fieldtype": "Small Text",
    "label": "Company Address (print)",
@@ -188,7 +195,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-01 16:30:00.000000",
+ "modified": "2026-11-01 18:30:00.000000",
  "modified_by": "Administrator",
  "module": "Kodafreight",
  "name": "Release Order",

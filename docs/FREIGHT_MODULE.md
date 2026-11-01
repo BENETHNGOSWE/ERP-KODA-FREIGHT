@@ -208,6 +208,23 @@ bench --site <site> execute frappe.delete_doc --args '["Workspace", "Kodafreight
 bench --site <site> migrate
 ```
 
+## 5e. Where to set the invoice letterhead and the money details
+
+Everything on the Final Invoice PDF is data you own, not code:
+
+| What appears on the PDF | Where to set it |
+|---|---|
+| Company name, phone, email, TIN | **Company** record (`/app/company`) - *Company Name*, *Phone No*, *Email*, *Tax ID* |
+| `Office Add: ...` | **Address** (`/app/address/new`) with a *Reference* row: Document Type = Company, Link Name = your company. Tick *Is Your Company Address* / set as primary. The print hook reads the primary address through `Dynamic Link` |
+| **Payment Info** - where the client sends money | **Accounting → Bank Account → New**: *Account Name*, *Bank*, *Account No* / *IBAN*, Company = yours, **Is Company Account = Yes**. Up to three company accounts are printed automatically |
+| Terms & Conditions | **Selling Settings → Default Terms and Conditions**, or the invoice's own *Terms* field |
+| Prepared by (name, email, phone) | automatic - taken from the user who created the invoice |
+| Amount Due / Exchange Rate / Total | the invoice itself: *Freight Pricing → CBM / Unit Price* and *Exchange Rate* |
+
+With an **Exchange Rate greater than 1**, the item table prints `Unit Price ($)` and
+`Total USD ($)` alongside `Amount Due (TZS)`, matching the legacy invoice layout. With
+Rate = 1 the table prints a single currency, with no empty dollar columns.
+
 ## 6. Tests
 
 ```bash
