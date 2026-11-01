@@ -249,6 +249,13 @@ def sync_sales_invoice(doc, submit=False):
         return invoice
 
     invoice = frappe.new_doc("Sales Invoice")
+    # Freight-looking number (INV-.YYYY.-) rather than the accounting default ACC-SINV-.
+    meta = invoice.meta.get_field("naming_series")
+    series = [option for option in (meta.options or "").split("\n") if option.strip()]
+    if "INV-.YYYY.-" in series:
+        invoice.naming_series = "INV-.YYYY.-"
+    elif series:
+        invoice.naming_series = series[0]
     invoice.company = default_company()
     invoice.customer = doc.customer
     invoice.posting_date = today()

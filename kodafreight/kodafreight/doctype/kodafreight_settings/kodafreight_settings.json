@@ -28,6 +28,10 @@
   "cb_security",
   "api_rate_limit_per_minute",
   "enable_audit_log",
+  "sb_invoice",
+  "invoice_payment_info",
+  "invoice_terms",
+  "invoice_footer_note",
   "low_balance_threshold"
  ],
  "fields": [
@@ -158,6 +162,28 @@
    "label": "Enable Audit Log"
   },
   {
+   "description": "Used on the Final Invoice PDF (Payment Info, Terms) when no Bank Account / Terms are set.",
+   "fieldname": "sb_invoice",
+   "fieldtype": "Section Break",
+   "label": "Invoice Defaults"
+  },
+  {
+   "description": "Where customers send money. One block per account, e.g.\nBank Name: KODA TECHNOLOGIES\nAcc Name: KODA TECHNOLOGIES\nAcc No: 345789098",
+   "fieldname": "invoice_payment_info",
+   "fieldtype": "Small Text",
+   "label": "Payment Info (printed on invoices)"
+  },
+  {
+   "fieldname": "invoice_terms",
+   "fieldtype": "Text",
+   "label": "Terms & Conditions (printed on invoices)"
+  },
+  {
+   "fieldname": "invoice_footer_note",
+   "fieldtype": "Small Text",
+   "label": "Footer Note"
+  },
+  {
    "default": 100,
    "fieldname": "low_balance_threshold",
    "fieldtype": "Int",
@@ -167,7 +193,7 @@
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-28 09:00:00.000000",
+ "modified": "2026-11-01 19:00:00.000000",
  "modified_by": "Administrator",
  "module": "Kodafreight",
  "name": "Kodafreight Settings",

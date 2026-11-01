@@ -140,6 +140,10 @@ def _fill_company_context(doc, company=None):
         "Company", company, ["company_name", "phone_no", "tax_id", "email"], as_dict=True
     ) or {}
     doc.kf_company_email = _safe(row.get("email"))
+    try:
+        doc.kf_company_logo = frappe.db.get_value("Company", company, "company_logo") or ""
+    except Exception:
+        doc.kf_company_logo = ""
     doc.kf_company_name = _safe(row.get("company_name"), company)
     doc.kf_company_phone = _safe(row.get("phone_no"))
     doc.kf_company_tin = _safe(row.get("tax_id"))
@@ -156,6 +160,17 @@ def _fill_customer_phone(doc):
         doc.kf_customer_phone = ""
 
 
+def _fill_payment_fallback(doc):
+    """Payment Info / Terms fallback from Settings, for every freight printout."""
+    try:
+        if not doc.get("kf_payment_info"):
+            doc.kf_payment_info = (
+                frappe.db.get_single_value("Kodafreight Settings", "invoice_payment_info") or ""
+            )
+    except Exception:
+        pass
+
+
 def set_freight_print_context(doc, method=None, print_settings=None, *args, **kwargs):
     """before_print for Cargo Load / Release Order / Delivery Order.
 
@@ -169,6 +184,7 @@ def set_freight_print_context(doc, method=None, print_settings=None, *args, **kw
     try:
         _fill_company_context(doc)
         _fill_customer_phone(doc)
+        _fill_payment_fallback(doc)
     except Exception:
         frappe.log_error(
             title="Kodafreight: print context failed ({0})".format(doc.doctype),
@@ -222,7 +238,21 @@ def _build_invoice_print_context(doc):
                 bank.get("account_no") or bank.get("iban") or "-",
             )
         )
+    if not blocks:
+        # Fallback the user can set in one place: Kodafreight Settings -> Invoice Defaults
+        try:
+            fallback = frappe.db.get_single_value("Kodafreight Settings", "invoice_payment_info")
+        except Exception:
+            fallback = None
+        if fallback:
+            blocks = [fallback]
     doc.kf_payment_info = "\n\n".join(blocks)
+
+    if not doc.get("terms"):
+        try:
+            doc.terms = frappe.db.get_single_value("Kodafreight Settings", "invoice_terms") or ""
+        except Exception:
+            pass
 
     # "Prepared / printed by" - the cashier who issued the bill, like the Laravel printout.
     try:

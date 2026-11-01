@@ -26,6 +26,51 @@ def after_install():
     print("Kodafreight installed.")
 
 
+def setup_invoice_naming_series():
+    """Give Sales Invoices a freight-looking number (INV-.YYYY.-) instead of ACC-SINV-.
+
+    Implemented as a Property Setter on the `naming_series` options so accounting
+    behaviour is untouched - the option is simply added, and the generator in
+    services/freight.py picks it for invoices created from a cargo load.
+    """
+    try:
+        if not frappe.db.exists("DocType", "Sales Invoice"):
+            return
+        current = frappe.db.get_value(
+            "Property Setter",
+            {"doc_type": "Sales Invoice", "field_name": "naming_series", "property": "options"},
+            "value",
+        )
+        meta_options = frappe.get_meta("Sales Invoice").get_field("naming_series").options or ""
+        options = current or meta_options
+        if "INV-.YYYY.-" in options:
+            return
+        value = (options.rstrip("\n") + "\nINV-.YYYY.-").strip()
+        if current:
+            frappe.db.set_value(
+                "Property Setter",
+                {"doc_type": "Sales Invoice", "field_name": "naming_series",
+                 "property": "options"},
+                "value",
+                value,
+            )
+        else:
+            frappe.get_doc({
+                "doctype": "Property Setter",
+                "doctype_or_field": "DocField",
+                "doc_type": "Sales Invoice",
+                "field_name": "naming_series",
+                "property": "options",
+                "property_type": "Text",
+                "value": value,
+            }).insert(ignore_permissions=True)
+    except Exception:
+        frappe.log_error(
+            title="Kodafreight: could not add the INV- naming series",
+            message=frappe.get_traceback(),
+        )
+
+
 def after_migrate():
     # Every step is idempotent, and none of them is allowed to abort `bench migrate`:
     # a failed provisioning step is logged and reported, and the site still migrates.
@@ -62,6 +107,7 @@ def setup_freight():
     safe(create_uoms, "UOMs")
     safe(create_freight_items, "freight items")
     safe(create_freight_custom_fields, "custom fields")
+    safe(setup_invoice_naming_series, "invoice naming series")
     safe(create_freight_reference_data, "reference data")
 
 
@@ -237,6 +283,14 @@ def create_freight_custom_fields():
                 "label": "Company Email (print)",
                 "fieldtype": "Data",
                 "insert_after": "kf_company_tin",
+                "read_only": 1,
+                "print_hide": 1,
+            },
+            {
+                "fieldname": "kf_company_logo",
+                "label": "Company Logo (print)",
+                "fieldtype": "Attach Image",
+                "insert_after": "kf_company_email",
                 "read_only": 1,
                 "print_hide": 1,
             },
