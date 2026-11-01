@@ -122,6 +122,24 @@ Standard print formats shipped with the app (all Jinja, editable in the UI):
 
 ---
 
+## 5b. Editing the shipped workspace
+
+Frappe only re-imports a standard Workspace when the JSON `modified` timestamp is **newer**
+than the record in the database. If you add cards/links to
+`kodafreight/kodafreight/workspace/kodafreight/kodafreight.json` and nothing changes after
+`bench migrate`, bump `modified` and re-run:
+
+```bash
+git pull && bench --site <site> migrate && bench --site <site> clear-cache && bench restart
+```
+
+If the workspace is still stale, delete the record and let migrate recreate it:
+
+```bash
+bench --site <site> execute frappe.delete_doc --args '["Workspace", "Kodafreight"]'
+bench --site <site> migrate
+```
+
 ## 6. Tests
 
 ```bash
