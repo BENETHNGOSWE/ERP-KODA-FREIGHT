@@ -135,6 +135,16 @@ doc_events = {
         "on_update": "kodafreight.freight_events.sync_cargo_load_status",
         "on_submit": "kodafreight.freight_events.sync_cargo_load_status",
         "on_cancel": "kodafreight.freight_events.sync_cargo_load_status",
+        "before_print": "kodafreight.freight_events.set_invoice_print_context",
+    },
+    "Cargo Load": {
+        "before_print": "kodafreight.freight_events.set_freight_print_context",
+    },
+    "Release Order": {
+        "before_print": "kodafreight.freight_events.set_freight_print_context",
+    },
+    "Delivery Order": {
+        "before_print": "kodafreight.freight_events.set_freight_print_context",
     },
     "Payment Entry": {
         "on_submit": "kodafreight.freight_events.sync_on_payment",

@@ -23,6 +23,12 @@
   "receiver_col",
   "warehouse",
   "remarks",
+  "kf_print_context",
+  "kf_company_name",
+  "kf_company_phone",
+  "kf_company_tin",
+  "kf_company_address",
+  "kf_customer_phone",
   "legacy_id"
  ],
  "fields": [
@@ -134,6 +140,43 @@
    "label": "Remarks"
   },
   {
+   "collapsed": 1,
+   "collapsible": 1,
+   "fieldname": "kf_print_context",
+   "fieldtype": "Section Break",
+   "label": "Print Context"
+  },
+  {
+   "fieldname": "kf_company_name",
+   "fieldtype": "Data",
+   "label": "Company Name (print)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "kf_company_phone",
+   "fieldtype": "Data",
+   "label": "Company Phone (print)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "kf_company_tin",
+   "fieldtype": "Data",
+   "label": "Company TIN (print)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "kf_company_address",
+   "fieldtype": "Small Text",
+   "label": "Company Address (print)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "kf_customer_phone",
+   "fieldtype": "Data",
+   "label": "Customer Phone (print)",
+   "read_only": 1
+  },
+  {
    "fieldname": "legacy_id",
    "fieldtype": "Data",
    "hidden": 1,
@@ -145,7 +188,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-01 10:00:00.000000",
+ "modified": "2026-11-01 16:30:00.000000",
  "modified_by": "Administrator",
  "module": "Kodafreight",
  "name": "Release Order",

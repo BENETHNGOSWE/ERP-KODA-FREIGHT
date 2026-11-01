@@ -77,6 +77,82 @@ def apply_invoice_pricing(doc, method=None):
                 break
 
 
+def _fill_company_context(doc, company=None):
+    """Resolve letterhead details in Python so the Jinja templates stay dumb."""
+    from kodafreight.services.freight import default_company
+
+    company = company or doc.get("company")
+    if not company:
+        try:
+            company = default_company()
+        except Exception:
+            company = None
+    if not company or not frappe.db.exists("Company", company):
+        return
+    row = frappe.db.get_value(
+        "Company", company, ["company_name", "phone_no", "tax_id"], as_dict=True
+    ) or {}
+    doc.kf_company_name = row.get("company_name") or company
+    doc.kf_company_phone = row.get("phone_no") or ""
+    doc.kf_company_tin = row.get("tax_id") or ""
+    address = frappe.db.get_value("Company", company, "company_address") or ""
+    doc.kf_company_address = address or ""
+
+
+def _fill_customer_phone(doc):
+    customer = doc.get("customer")
+    if not customer:
+        return
+    doc.kf_customer_phone = (
+        frappe.db.get_value("Customer", customer, "mobile_no") or ""
+    )
+
+
+def set_freight_print_context(doc, method=None):
+    """before_print for Cargo Load / Release Order / Delivery Order."""
+    _fill_company_context(doc)
+    _fill_customer_phone(doc)
+
+
+def set_invoice_print_context(doc, method=None):
+    """Prepare everything the Final Invoice PDF needs, before Jinja renders it.
+
+    Print formats run in a sandboxed Jinja environment where database lookups are
+    unreliable (that is what produced `417: There was an error building this page`), so the
+    company letterhead, TIN and bank details are resolved here - in normal Python - and the
+    template only prints plain fields.
+    """
+    if not frappe.db.exists("Sales Invoice", doc.name or ""):
+        return
+
+    company = doc.get("company")
+    _fill_company_context(doc, company)
+    _fill_customer_phone(doc)
+
+    banks = frappe.get_all(
+        "Bank Account",
+        filters={"is_company_account": 1, "company": company} if company else {},
+        fields=["bank", "account_name", "account_no", "iban"],
+        limit=3,
+    )
+    lines = []
+    for bank in banks:
+        lines.append(
+            "Bank Name: {0}\nAcc Name: {1}\nAcc No: {2}".format(
+                bank.get("bank") or "-",
+                bank.get("account_name") or "-",
+                bank.get("account_no") or bank.get("iban") or "-",
+            )
+        )
+    doc.kf_payment_info = "\n\n".join(lines)
+
+    if not doc.get("kf_cargo_load"):
+        for row in doc.get("items") or []:
+            if row.get("kf_cargo_load"):
+                doc.kf_cargo_load = row.kf_cargo_load
+                break
+
+
 def stamp_customer_tenant(doc, method=None):
     """Give every Customer a client, so freight data stays inside its tenant.
 

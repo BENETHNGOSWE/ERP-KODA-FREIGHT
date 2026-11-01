@@ -1,68 +1,59 @@
-<div class="kf-doc">
-<style>
-  .kf-doc { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #222; }
-  .kf-head { display: flex; justify-content: space-between; border-bottom: 3px solid #1f4e79; padding-bottom: 10px; }
-  .kf-company h1 { font-size: 20px; margin: 0; color: #1f4e79; letter-spacing: 1px; }
-  .kf-company div { font-size: 11px; color: #555; }
-  .kf-title { text-align: right; }
-  .kf-title h2 { margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 2px; }
-  .kf-title div { font-size: 11px; color: #555; }
-  table.kf-grid { width: 100%; border-collapse: collapse; margin-top: 14px; }
-  table.kf-grid th { background: #1f4e79; color: #fff; text-align: left; padding: 6px; font-size: 11px; }
-  table.kf-grid td { border-bottom: 1px solid #ddd; padding: 6px; vertical-align: top; }
-  table.kf-grid td.num, table.kf-grid th.num { text-align: right; }
-  .kf-box { border: 1px solid #cfd8e3; background: #f7f9fc; padding: 10px; margin-top: 12px; }
-  .kf-box h3 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase; color: #1f4e79; letter-spacing: 1px; }
-  .kf-total { margin-top: 12px; width: 45%; margin-left: auto; }
-  .kf-total td { padding: 5px; border-bottom: 1px solid #e3e8ef; }
-  .kf-total td.num { text-align: right; }
-  .kf-total tr.grand td { font-weight: bold; font-size: 14px; border-top: 2px solid #1f4e79; border-bottom: none; }
-  .kf-sign { margin-top: 40px; display: flex; justify-content: space-between; }
-  .kf-sign div { width: 30%; border-top: 1px solid #333; padding-top: 5px; font-size: 11px; text-align: center; }
-  .kf-foot { margin-top: 24px; font-size: 10px; color: #777; text-align: center; }
-  .kf-note { font-size: 11px; color: #b03a2e; margin-top: 10px; }
+<div class="kf"><style>
+ .kf{font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#222}
+ .kf-top{display:table;width:100%}.kf-top .l,.kf-top .r{display:table-cell;vertical-align:top;width:50%}
+ .kf-top .r{text-align:right}.kf-title{font-size:24px;letter-spacing:3px;color:#1f4e79;font-weight:bold}
+ .kf-co-name{font-size:14px;font-weight:bold;color:#1f4e79}.kf-co-line{font-size:10px;color:#444}
+ .kf-bar{height:3px;background:#1f4e79;margin:8px 0 12px}
+ .kf-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#1f4e79;font-weight:bold}
+ .kf-strong{font-size:12px;font-weight:bold}.kf-muted{color:#555}
+ table.kf-items{width:100%;border-collapse:collapse;margin-top:10px}
+ table.kf-items th{background:#1f4e79;color:#fff;font-size:10px;text-align:left;padding:6px}
+ table.kf-items td{border-bottom:1px solid #dfe5ec;padding:6px}
+ table.kf-items td.num,table.kf-items th.num{text-align:right}
+ .kf-box{border:1px solid #cfd8e3;background:#f7f9fc;padding:8px 10px;margin-top:12px}
+ .kf-box pre{margin:0;font-family:Helvetica,Arial,sans-serif;font-size:10px;white-space:pre-wrap}
+ .kf-sign{display:table;width:100%;margin-top:26px}
+ .kf-sign div{display:table-cell;width:33%;font-size:10px;padding-top:14px;border-top:1px solid #333}
+ .kf-foot{position:fixed;bottom:-12mm;left:0;right:0;font-size:8px;color:#777;text-align:center;border-top:1px solid #ddd;padding-top:4px}
 </style>
-
-<div class="kf-head">
-  <div class="kf-company">
-    <h1>{{ doc.company or _("KODA FREIGHT") }}</h1>
-    <div>{{ frappe.db.get_value("Company", doc.company, "company_address") or "" }}</div>
-    <div>{{ frappe.db.get_value("Company", doc.company, "phone_no") or "" }}</div>
+ <div class="kf-top">
+  <div class="l"><div class="kf-title">COMBINED INVOICE</div><div class="kf-muted">{{ doc.name }}</div></div>
+  <div class="r">
+   <div class="kf-co-name">{{ doc.get("kf_company_name") or "" }}</div>
+   {% if doc.get("kf_company_phone") %}<div class="kf-co-line">Office Phone: {{ doc.get("kf_company_phone") }}</div>{% endif %}
+   {% if doc.get("kf_company_tin") %}<div class="kf-co-line">TIN Number: {{ doc.get("kf_company_tin") }}</div>{% endif %}
+   {% if doc.get("kf_company_address") %}<div class="kf-co-line">{{ doc.get("kf_company_address") }}</div>{% endif %}
   </div>
-  <div class="kf-title">
-    <h2>Combined Invoice</h2>
-    <div>{{ invoice_numbers }}</div>
-  </div>
-</div>
-
-<div class="kf-box">
-  <h3>Bill To</h3>
-  <strong>{{ customer_name or customer }}</strong>
-  <div>Invoices covered: {{ invoice_numbers }}</div>
-</div>
-
-<table class="kf-grid">
-  <tr><th>Invoice</th><th>Date</th><th class="num">Invoice Total</th><th class="num">Paid</th><th class="num">Balance</th></tr>
+ </div>
+ <div class="kf-bar"></div>
+ <div class="kf-box">
+  <div class="kf-label">Bill To</div>
+  <div class="kf-strong">{{ customer_name or customer }}</div>
+  <div class="kf-muted">Invoices covered: {{ invoice_numbers }}</div>
+ </div>
+ <table class="kf-items">
+  <thead><tr><th>Invoice</th><th>Date</th><th class="num">Invoice Total</th><th class="num">Paid</th><th class="num">Balance</th></tr></thead>
+  <tbody>
   {% for inv in invoices %}
-  <tr>
+   <tr>
     <td>{{ inv.name }}</td>
-    <td>{{ frappe.utils.formatdate(inv.posting_date) }}</td>
-    <td class="num">{{ "{:,.2f}".format(inv.grand_total or 0) }}</td>
-    <td class="num">{{ "{:,.2f}".format((inv.grand_total or 0) - (inv.outstanding_amount or 0)) }}</td>
-    <td class="num">{{ "{:,.2f}".format(inv.outstanding_amount or 0) }}</td>
-  </tr>
+    <td>{{ inv.get_formatted("posting_date") }}</td>
+    <td class="num">{{ inv.get_formatted("grand_total") }}</td>
+    <td class="num">{{ inv.get_formatted("paid_amount") }}</td>
+    <td class="num">{{ inv.get_formatted("outstanding_amount") }}</td>
+   </tr>
   {% endfor %}
-</table>
-
-<table class="kf-total">
-  <tr class="grand"><td>Combined Total</td><td class="num">{{ "{:,.2f}".format(total_grand or 0) }}</td></tr>
-  <tr class="grand"><td>Combined Balance</td><td class="num">{{ "{:,.2f}".format(total_outstanding or 0) }}</td></tr>
-</table>
-
-<div class="kf-note">
-  This is a combined statement of the invoices listed above. Payments must be allocated to each
-  original invoice; merging does not change or cancel any of them.
-</div>
-
-<div class="kf-foot">This document was generated by Kodafreight.</div>
+  </tbody>
+ </table>
+ <div class="kf-box"><div class="kf-label">Totals</div>
+  Combined total: {{ "{:,.2f}".format(total_grand or 0) }} &nbsp;|&nbsp;
+  Combined balance: {{ "{:,.2f}".format(total_outstanding or 0) }}
+ </div>
+ <div class="kf-box"><div class="kf-label">Note</div>
+  Combined statement of the invoices above. Payments must be allocated to each original invoice;
+  merging does not change or cancel any of them.</div>
+ <div class="kf-foot">{{ doc.get("kf_company_name") or "" }}
+   {% if doc.get("kf_company_address") %} &nbsp;|&nbsp; {{ doc.get("kf_company_address") }}{% endif %}
+   {% if doc.get("kf_company_phone") %} &nbsp;|&nbsp; Tel: {{ doc.get("kf_company_phone") }}{% endif %}
+ </div>
 </div>
