@@ -5,6 +5,12 @@
 frappe.ui.form.on("Cargo Load", {
 	refresh(frm) {
 		apply_quantity_label(frm);
+		// Make the "money comes from the invoice" rule obvious on screen.
+		if (frm.doc.sales_invoice && frm.doc.total_amount) {
+			frm.dashboard.set_headline(
+				__("Priced on invoice {0}: {1}", [frm.doc.sales_invoice, format_currency(frm.doc.total_amount)])
+			);
+		}
 
 		if (frm.is_new()) return;
 
@@ -21,15 +27,20 @@ frappe.ui.form.on("Cargo Load", {
 		}
 
 		if (frm.doc.docstatus === 1 && frm.doc.invoice_status !== "Paid") {
+			// Opening the invoice never requires money: the rate is typed on the invoice.
 			frm.add_custom_button(__("Create / Update Invoice"), () => {
-				frappe.confirm(__("Price this load and create or refresh its Sales Invoice?"), () => {
-					frm.call("make_invoice").then((r) => {
-						frm.reload_doc();
-						if (r.message) {
-							frappe.show_alert({ message: __("Invoice {0} ready", [r.message]), indicator: "green" });
-						}
-					});
-				});
+				frappe.confirm(
+					__("Open (or create) the Sales Invoice for this load? Type the CBM/KG rate on the invoice itself."),
+					() => {
+						frm.call("make_invoice").then((r) => {
+							frm.reload_doc();
+							if (r.message) {
+								frappe.show_alert({ message: __("Invoice {0} ready", [r.message]), indicator: "green" });
+								frappe.set_route("Form", "Sales Invoice", r.message);
+							}
+						});
+					}
+				);
 			}).addClass("btn-primary");
 		}
 
@@ -100,12 +111,10 @@ function recalc(frm) {
 	// Mirrors services/freight.py::billable_volume / billable_quantity
 	const cbm = d.measure_dimensions && measured > 0 ? measured : volume_unit ? d.quantity || 0 : 0;
 	const billable_qty = volume_unit ? cbm : d.quantity || 0;
-	const fx = d.exchange_rate || 1;
-	const freight = billable_qty * (d.rate || 0) * fx;
 
+	// Only the measurement/quantity fields are ours to compute. Money is read-only here:
+	// it arrives from the Sales Invoice when it is saved or submitted.
 	frm.set_value("volume_cbm", flt(measured, 4));
 	frm.set_value("billable_volume", flt(cbm, 4));
 	frm.set_value("billable_quantity", flt(billable_qty, 4));
-	frm.set_value("freight_amount", flt(freight, 2));
-	frm.set_value("total_amount", flt(freight + (d.transport_fee || 0), 2));
 }

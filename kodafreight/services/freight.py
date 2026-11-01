@@ -177,11 +177,16 @@ def _require_item(item_code):
 
 
 def invoice_rows_for(doc):
-    """Sales Invoice item rows for one priced Cargo Load."""
+    """Sales Invoice item rows for one Cargo Load.
+
+    A rate of 0 is allowed on purpose: the invoice is opened as soon as the cargo exists
+    (Laravel `generateInvoice()` did the same), and the CBM/KG rate is typed on the
+    invoice later, when the cargo receipt is done.
+    """
     rows = []
     qty = flt(billable_quantity(doc))
     rate = flt(doc.get("rate")) * (flt(doc.get("exchange_rate")) or 1)
-    if qty > 0 and rate > 0:
+    if qty > 0:
         rows.append(
             {
                 "item_code": _require_item(FREIGHT_ITEM),
@@ -216,14 +221,12 @@ def sync_sales_invoice(doc, submit=False):
     except the invoice only exists once the load is actually priced, and it is always a
     real ERPNext ledger document.
     """
-    if not is_priced(doc):
-        doc.invoice_status = INVOICE_PENDING
-        doc.sales_invoice = None
-        return None
-
+    # Money is NOT a precondition: only a quantity (or a transport fee) is needed for the
+    # invoice to exist. Pricing happens later, on the invoice itself.
     rows = invoice_rows_for(doc)
     if not rows:
         doc.invoice_status = INVOICE_PENDING
+        doc.sales_invoice = None
         return None
 
     if doc.get("sales_invoice"):
@@ -270,6 +273,39 @@ def sync_sales_invoice(doc, submit=False):
     return invoice
 
 
+def pull_pricing_from_invoice(doc):
+    """Show on the Cargo Load whatever was priced on its Sales Invoice.
+
+    The load's pricing fields are read-only: the clerk types qty/rate/transport on the
+    invoice (the "update invoice" step), and reopening the load simply reflects it.
+    """
+    invoice_name = doc.get("sales_invoice")
+    if not invoice_name or not frappe.db.exists("Sales Invoice", invoice_name):
+        return doc
+    invoice = frappe.get_doc("Sales Invoice", invoice_name)
+
+    freight_amount = 0.0
+    transport_fee = 0.0
+    quantity = 0.0
+    rate = 0.0
+    for row in invoice.get("items") or []:
+        if row.get("item_code") == TRANSPORT_ITEM:
+            transport_fee += flt(row.get("amount"))
+        elif row.get("item_code") == FREIGHT_ITEM:
+            freight_amount += flt(row.get("amount"))
+            quantity += flt(row.get("qty"))
+            if not rate:
+                rate = flt(row.get("rate"))
+
+    doc.billable_quantity = quantity
+    doc.rate = rate
+    doc.freight_amount = freight_amount
+    doc.transport_fee = transport_fee
+    doc.total_amount = flt(invoice.grand_total) or (freight_amount + transport_fee)
+    doc.invoice_status = invoice_status_label(invoice)
+    return doc
+
+
 def invoice_status_label(invoice):
     """Label a Sales Invoice the way a freight clerk thinks about it."""
     if invoice.docstatus == 0:
@@ -285,18 +321,36 @@ def invoice_status_label(invoice):
 
 
 def refresh_load_from_invoice(load_name):
-    """Push the invoice's payment state back onto the Cargo Load row."""
+    """Push the invoice's payment state and pricing back onto the Cargo Load row."""
     invoice_name = frappe.db.get_value("Cargo Load", load_name, "sales_invoice")
     if not invoice_name or not frappe.db.exists("Sales Invoice", invoice_name):
-        return
+        return None
     invoice = frappe.get_doc("Sales Invoice", invoice_name)
-    frappe.db.set_value(
-        "Cargo Load",
-        load_name,
-        "invoice_status",
-        invoice_status_label(invoice),
-        update_modified=False,
-    )
+
+    values = {"invoice_status": invoice_status_label(invoice)}
+    freight_amount = 0.0
+    transport_fee = 0.0
+    quantity = 0.0
+    rate = 0.0
+    for row in invoice.get("items") or []:
+        if row.get("item_code") == TRANSPORT_ITEM:
+            transport_fee += flt(row.get("amount"))
+        elif row.get("item_code") == FREIGHT_ITEM:
+            freight_amount += flt(row.get("amount"))
+            quantity += flt(row.get("qty"))
+            rate = rate or flt(row.get("rate"))
+    if quantity or freight_amount or transport_fee:
+        values.update(
+            {
+                "billable_quantity": quantity,
+                "rate": rate,
+                "freight_amount": freight_amount,
+                "transport_fee": transport_fee,
+                "total_amount": flt(invoice.grand_total) or (freight_amount + transport_fee),
+            }
+        )
+    frappe.db.set_value("Cargo Load", load_name, values, update_modified=False)
+    return values
 
 
 # --------------------------------------------------------------------------- payment gate

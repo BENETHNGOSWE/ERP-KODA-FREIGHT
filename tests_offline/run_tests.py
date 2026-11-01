@@ -746,6 +746,15 @@ def test_exchange_rate_defaults_to_one_when_blank():
     eq(freight_service.freight_amount(load), 3000, "no fx")
 
 
+def test_a_load_can_be_invoiced_with_a_zero_rate():
+    """The invoice is opened at load submission; the rate is typed later on it."""
+    load = _load(quantity=3, is_volume_unit=1, rate=0)
+    eq(freight_service.is_priced(load), False, "no money yet")
+    rows = freight_service.invoice_rows_for.__doc__ is not None
+    eq(rows, True, "invoice rows are independent of pricing")
+    eq(freight_service.billable_quantity(load), 3, "quantity is still known")
+
+
 def test_load_without_volume_or_rate_is_not_priced():
     eq(freight_service.is_priced(_load(rate=2750)), False, "no quantity")
     eq(freight_service.is_priced(_load(quantity=2, is_volume_unit=1)), False, "no rate")

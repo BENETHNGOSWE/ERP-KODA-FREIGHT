@@ -13,7 +13,11 @@ from kodafreight.utils.tenant import get_user_client
 
 
 def sync_cargo_load_status(doc, method=None):
-    """Sales Invoice changed -> refresh the Cargo Load(s) that created it."""
+    """Sales Invoice changed -> copy status *and* pricing back onto the Cargo Load.
+
+    This is the "update invoice" step: the clerk types qty / rate / exchange rate /
+    transport fee on the invoice, and reopening the cargo load shows those figures.
+    """
     if not doc.get("name"):
         return
     loads = frappe.get_all(

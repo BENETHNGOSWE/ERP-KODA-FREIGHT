@@ -41,8 +41,11 @@ Pricing               rate (per unit), exchange rate, transport fee, freight amo
 Invoice               sales invoice, invoice status
 ```
 
-* **Measurements are optional**, exactly as in the Laravel form. Nothing blocks data entry;
-  a load without a quantity simply stays *Pending Pricing* and cannot be invoiced.
+* **Measurements are optional**, exactly as in the Laravel form. Nothing blocks data entry.
+* **Money is never entered on the load.** `rate`, `exchange_rate`, `transport_fee`,
+  `freight_amount` and `total_amount` are read-only on the Cargo Load; the pricing section is
+  collapsed until an invoice exists. The clerk prices on the **Sales Invoice** - that is the
+  legacy "update invoice" step - and reopening the load shows the figures back.
 * **Ocean Mode** decides the shipping channel: ticked = ocean freight (may go into a
   Container), unticked = air freight (containers are refused).
 * The rate is *per unit of the selected Unit Type*, so the same form prices CBM, KG or pieces.

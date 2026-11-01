@@ -22,8 +22,11 @@ class CargoLoad(Document):
     # ------------------------------------------------------------------ validation
     def validate(self):
         self._enforce_tenant()
-        freight.apply_tariff(self)
-        freight.apply_pricing(self)
+        if self.sales_invoice:
+            # Already invoiced: the invoice owns the money. Just display it.
+            freight.pull_pricing_from_invoice(self)
+        else:
+            freight.apply_pricing(self)
         self._validate_measurements()
         self._validate_shipping_mode()
         self._validate_dates()
@@ -109,6 +112,8 @@ class CargoLoad(Document):
             "In Container" if self.container else "Registered",
             update_modified=False,
         )
+        # Submit never fails because of money: an invoice is opened with a zero rate and
+        # priced later (Laravel created a 0.00 invoice at load submission too).
         invoice = freight.sync_sales_invoice(self)
         if invoice:
             self.db_set("sales_invoice", invoice.name, update_modified=False)
@@ -146,17 +151,27 @@ class CargoLoad(Document):
     # ------------------------------------------------------------------ actions
     @frappe.whitelist()
     def make_invoice(self, submit=0):
-        """Price and invoice the load (Laravel: price the invoice, then bill it)."""
+        """Open or refresh the Sales Invoice for this load.
+
+        Deliberately does NOT ask for money: the invoice is created with the quantity the
+        load already has and a zero rate, exactly like the legacy `generateInvoice()`.
+        The clerk then opens the invoice, types the CBM/KG rate and exchange rate, and
+        submits it - nothing here can block the load.
+        """
         self.check_permission("write")
-        freight.apply_tariff(self)
-        freight.apply_pricing(self)
-        if not freight.is_priced(self):
-            frappe.throw(
-                _("Set a CBM rate with a billable volume, or a transport fee, before invoicing.")
-            )
         self.flags.ignore_permissions = True
         self.save()
         invoice = freight.sync_sales_invoice(self, submit=cint(submit))
+        if not invoice:
+            frappe.msgprint(
+                _(
+                    "Nothing to invoice yet: type the quantity (or a transport fee) on the "
+                    "load first. The rate is entered later, on the invoice."
+                ),
+                title=_("Invoice not created"),
+                indicator="orange",
+            )
+            return None
         self.db_set("sales_invoice", invoice.name, update_modified=False)
         self.db_set(
             "invoice_status", freight.invoice_status_label(invoice), update_modified=False

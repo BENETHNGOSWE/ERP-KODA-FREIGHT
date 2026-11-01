@@ -260,32 +260,43 @@
    "read_only": 1
   },
   {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:doc.sales_invoice",
+   "description": "Read-only: pricing is entered on the invoice, after the cargo receipt. Leave everything empty while creating the load.",
    "fieldname": "pricing",
    "fieldtype": "Section Break",
-   "label": "Pricing"
+   "label": "Pricing (from the Sales Invoice)"
   },
   {
-   "description": "Price per one unit of the selected Unit Type. Freight = billable quantity x rate x exchange rate.",
+   "description": "Filled on the Sales Invoice (the 'update invoice' step). Read-only here - reopen the load after invoicing to see the figures.",
    "fieldname": "rate",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Rate (per unit)"
+   "label": "Rate (per unit)",
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "default": "1",
+   "description": "Filled on the Sales Invoice (the 'update invoice' step). Read-only here - reopen the load after invoicing to see the figures.",
    "fieldname": "exchange_rate",
    "fieldtype": "Float",
    "label": "Exchange Rate",
-   "precision": "6"
+   "no_copy": 1,
+   "precision": "6",
+   "read_only": 1
   },
   {
    "fieldname": "pricing_col",
    "fieldtype": "Column Break"
   },
   {
+   "description": "Filled on the Sales Invoice (the 'update invoice' step). Read-only here - reopen the load after invoicing to see the figures.",
    "fieldname": "transport_fee",
    "fieldtype": "Currency",
-   "label": "Transport Fee"
+   "label": "Transport Fee",
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "description": "Billable CBM x CBM Rate x Exchange Rate.",
@@ -340,7 +351,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-01 13:00:00.000000",
+ "modified": "2026-11-01 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "Kodafreight",
  "name": "Cargo Load",
