@@ -12,7 +12,7 @@ from kodafreight.services import freight
 from kodafreight.utils.tenant import get_user_client
 
 
-def sync_cargo_load_status(doc, method=None):
+def sync_cargo_load_status(doc, method=None, *args, **kwargs):
     """Sales Invoice changed -> copy status *and* pricing back onto the Cargo Load.
 
     This is the "update invoice" step: the clerk types qty / rate / exchange rate /
@@ -29,7 +29,7 @@ def sync_cargo_load_status(doc, method=None):
         freight.refresh_load_from_invoice(load_name)
 
 
-def sync_on_payment(doc, method=None):
+def sync_on_payment(doc, method=None, *args, **kwargs):
     """Payment Entry submitted/cancelled -> the invoices it touched changed state."""
     seen = set()
     for ref in doc.get("references") or []:
@@ -46,7 +46,7 @@ def sync_on_payment(doc, method=None):
             freight.refresh_load_from_invoice(load_name)
 
 
-def apply_invoice_pricing(doc, method=None):
+def apply_invoice_pricing(doc, method=None, *args, **kwargs):
     """The Laravel "edit invoice" step, applied to an ERPNext Sales Invoice.
 
     The clerk types *CBM / Unit Price* and *Exchange Rate* on the invoice; this computes
@@ -108,14 +108,23 @@ def _fill_customer_phone(doc):
     )
 
 
-def set_freight_print_context(doc, method=None):
-    """before_print for Cargo Load / Release Order / Delivery Order."""
+def set_freight_print_context(doc, method=None, print_settings=None, *args, **kwargs):
+    """before_print for Cargo Load / Release Order / Delivery Order.
+
+    Frappe calls this as `doc.run_method("before_print", print_settings)`, i.e. with the
+    print settings as an extra positional argument - accepting only (doc, method) breaks it
+    with `TypeError: takes from 1 to 2 positional arguments but 3 were given`. The trailing
+    *args/**kwargs keeps this safe across Frappe versions.
+    """
     _fill_company_context(doc)
     _fill_customer_phone(doc)
 
 
-def set_invoice_print_context(doc, method=None):
+def set_invoice_print_context(doc, method=None, print_settings=None, *args, **kwargs):
     """Prepare everything the Final Invoice PDF needs, before Jinja renders it.
+
+    Same calling convention as `set_freight_print_context` (see the note there).
+    
 
     Print formats run in a sandboxed Jinja environment where database lookups are
     unreliable (that is what produced `417: There was an error building this page`), so the
@@ -153,7 +162,7 @@ def set_invoice_print_context(doc, method=None):
                 break
 
 
-def stamp_customer_tenant(doc, method=None):
+def stamp_customer_tenant(doc, method=None, *args, **kwargs):
     """Give every Customer a client, so freight data stays inside its tenant.
 
     Without this, ERPNext's Customer list would show every company's customers - the
