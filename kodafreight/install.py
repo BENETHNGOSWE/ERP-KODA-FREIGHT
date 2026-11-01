@@ -35,6 +35,7 @@ def ensure_settings_schema():
     data risk and this guarantees new fields appear.
     """
     try:
+        frappe.reload_doc("kodafreight", "doctype", "payment_account", force=True)
         frappe.reload_doc("kodafreight", "doctype", "kodafreight_settings", force=True)
     except Exception:
         frappe.log_error(

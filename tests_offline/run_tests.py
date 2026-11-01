@@ -863,6 +863,30 @@ def test_print_context_does_not_query_a_missing_company_address_column():
     assert "tabAddress" in source and "Dynamic Link" in source, source
 
 
+def test_payment_info_prints_one_field_per_line():
+    text = freight_events._format_account("KODA BANK", "KODA TECHNOLOGIES", "345789098")
+    eq(text.split("\n"), [
+        "Bank Name: KODA BANK",
+        "Acc Name: KODA TECHNOLOGIES",
+        "Acc No: 345789098",
+    ], "three separate lines")
+
+
+def test_payment_info_includes_branch_and_swift_only_when_present():
+    without = freight_events._format_account("B", "A", "1")
+    eq(len(without.split("\n")), 3, "no optional lines")
+    with_extra = freight_events._format_account("B", "A", "1", "Mlimani", "SW123")
+    eq(len(with_extra.split("\n")), 5, "branch + swift")
+
+
+def test_payment_info_blocks_are_separated_by_a_blank_line():
+    first = freight_events._format_account("B1", "A1", "111")
+    second = freight_events._format_account("B2", "A2", "222")
+    joined = "\n\n".join([first, second])
+    eq(joined.count("\n\n"), 1, "one blank line between accounts")
+    eq(joined.split("\n")[3], "", "blank separator")
+
+
 # Register the freight tests declared above (they are written as plain functions so the
 # file reads like documentation, then collected here in declaration order).
 for _name, _fn in list(globals().items()):

@@ -29,6 +29,7 @@
   "api_rate_limit_per_minute",
   "enable_audit_log",
   "sb_invoice",
+  "payment_accounts",
   "invoice_payment_info",
   "invoice_terms",
   "invoice_footer_note",
@@ -168,9 +169,17 @@
    "label": "Invoice Defaults"
   },
   {
-   "description": "Where customers send money. One block per account, e.g.\nBank Name: KODA TECHNOLOGIES\nAcc Name: KODA TECHNOLOGIES\nAcc No: 345789098",
+   "description": "Each row prints on its own lines in the Payment Info block of the invoice.",
+   "fieldname": "payment_accounts",
+   "fieldtype": "Table",
+   "label": "Payment Accounts",
+   "options": "Payment Account"
+  },
+  {
+   "description": "Legacy free-text version - hidden; use Payment Accounts above.",
    "fieldname": "invoice_payment_info",
    "fieldtype": "Small Text",
+   "hidden": 1,
    "label": "Payment Info (printed on invoices)"
   },
   {
@@ -193,7 +202,7 @@
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-12-01 09:00:00.000000",
+ "modified": "2026-12-01 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Kodafreight",
  "name": "Kodafreight Settings",

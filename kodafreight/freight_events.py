@@ -160,13 +160,82 @@ def _fill_customer_phone(doc):
         doc.kf_customer_phone = ""
 
 
+def _format_account(bank_name, account_name, account_number, branch=None, swift=None):
+    """One account, one line per field - never one wrapped paragraph."""
+    lines = [
+        "Bank Name: {0}".format(bank_name or "-"),
+        "Acc Name: {0}".format(account_name or "-"),
+        "Acc No: {0}".format(account_number or "-"),
+    ]
+    if branch:
+        lines.append("Branch: {0}".format(branch))
+    if swift:
+        lines.append("SWIFT: {0}".format(swift))
+    return "\n".join(lines)
+
+
+def _payment_info_lines(company=None):
+    """Build the Payment Info block, one line per value.
+
+    Precedence:
+      1. Kodafreight Settings -> **Payment Accounts** (a table: bank name, account name,
+         account number, branch, swift) - each row becomes its own block of lines;
+      2. ERPNext Bank Accounts flagged *Is Company Account*;
+      3. the legacy free-text field, if someone still uses it.
+    """
+    blocks = []
+
+    try:
+        settings = frappe.get_single("Kodafreight Settings")
+        for row in settings.get("payment_accounts") or []:
+            blocks.append(
+                _format_account(
+                    row.get("bank_name"),
+                    row.get("account_name"),
+                    row.get("account_number"),
+                    row.get("branch"),
+                    row.get("swift_code"),
+                )
+            )
+    except Exception:
+        pass
+
+    if not blocks:
+        try:
+            banks = frappe.get_all(
+                "Bank Account",
+                filters={"is_company_account": 1, "company": company} if company else {},
+                fields=["bank", "account_name", "account_no", "iban", "branch"],
+                limit=3,
+            )
+        except Exception:
+            banks = []
+        for bank in banks:
+            blocks.append(
+                _format_account(
+                    bank.get("bank"),
+                    bank.get("account_name"),
+                    bank.get("account_no") or bank.get("iban"),
+                    bank.get("branch"),
+                )
+            )
+
+    if not blocks:
+        try:
+            legacy = frappe.db.get_single_value("Kodafreight Settings", "invoice_payment_info")
+        except Exception:
+            legacy = None
+        if legacy:
+            blocks = [legacy.strip()]
+
+    return "\n\n".join(blocks)
+
+
 def _fill_payment_fallback(doc):
     """Payment Info / Terms fallback from Settings, for every freight printout."""
     try:
         if not doc.get("kf_payment_info"):
-            doc.kf_payment_info = (
-                frappe.db.get_single_value("Kodafreight Settings", "invoice_payment_info") or ""
-            )
+            doc.kf_payment_info = _payment_info_lines(doc.get("company"))
     except Exception:
         pass
 
@@ -220,39 +289,7 @@ def _build_invoice_print_context(doc):
     _fill_company_context(doc, company)
     _fill_customer_phone(doc)
 
-    try:
-        banks = frappe.get_all(
-            "Bank Account",
-            filters={"is_company_account": 1, "company": company} if company else {},
-            fields=["bank", "account_name", "account_no", "iban"],
-            limit=3,
-        )
-    except Exception:
-        banks = []
-    blocks = []
-    for bank in banks:
-        blocks.append(
-            "Bank Name: {0}\nAcc Name: {1}\nAcc No: {2}".format(
-                bank.get("bank") or "-",
-                bank.get("account_name") or "-",
-                bank.get("account_no") or bank.get("iban") or "-",
-            )
-        )
-    if not blocks:
-        # Fallback the user can set in one place: Kodafreight Settings -> Invoice Defaults
-        try:
-            fallback = frappe.db.get_single_value("Kodafreight Settings", "invoice_payment_info")
-        except Exception:
-            fallback = None
-        if fallback:
-            blocks = [fallback]
-    doc.kf_payment_info = "\n\n".join(blocks)
-
-    if not doc.get("terms"):
-        try:
-            doc.terms = frappe.db.get_single_value("Kodafreight Settings", "invoice_terms") or ""
-        except Exception:
-            pass
+    doc.kf_payment_info = _payment_info_lines(company)
 
     # "Prepared / printed by" - the cashier who issued the bill, like the Laravel printout.
     try:

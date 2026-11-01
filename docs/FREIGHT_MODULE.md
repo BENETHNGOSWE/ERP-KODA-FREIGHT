@@ -216,7 +216,7 @@ Everything on the Final Invoice PDF is data you own, not code:
 |---|---|
 | Company name, phone, email, TIN | **Company** record (`/app/company`) - *Company Name*, *Phone No*, *Email*, *Tax ID* |
 | `Office Add: ...` | **Address** (`/app/address/new`) with a *Reference* row: Document Type = Company, Link Name = your company. Tick *Is Your Company Address* / set as primary. The print hook reads the primary address through `Dynamic Link` |
-| **Payment Info** - where the client sends money | **Accounting → Bank Account → New**: *Account Name*, *Bank*, *Account No* / *IBAN*, Company = yours, **Is Company Account = Yes**. Up to three company accounts are printed automatically |
+| **Payment Info** - where the client sends money | **Kodafreight Settings → Invoice Defaults → Payment Accounts** (a table: Bank Name, Account Name, Account Number, Branch, SWIFT). Each row prints on its own lines, one field per line. Falls back to ERPNext **Bank Account** rows marked *Is Company Account* |
 | Terms & Conditions | **Selling Settings → Default Terms and Conditions**, or the invoice's own *Terms* field |
 | Prepared by (name, email, phone) | automatic - taken from the user who created the invoice |
 | Amount Due / Exchange Rate / Total | the invoice itself: *Freight Pricing → CBM / Unit Price* and *Exchange Rate* |
