@@ -171,6 +171,36 @@ def create_freight_custom_fields():
         ],
         "Sales Invoice": [
             {
+                "fieldname": "kf_freight_pricing",
+                "label": "Freight Pricing",
+                "fieldtype": "Section Break",
+                "insert_after": "items",
+                "collapsible": 1,
+                "description": "The Laravel invoice form: CBM price and exchange rate. The freight row rate is computed from them.",
+            },
+            {
+                "fieldname": "kf_cbm_price",
+                "label": "CBM / Unit Price",
+                "fieldtype": "Currency",
+                "insert_after": "kf_freight_pricing",
+                "description": "Price per unit (CBM, kg, piece) BEFORE the exchange rate.",
+            },
+            {
+                "fieldname": "kf_price_column",
+                "label": "",
+                "fieldtype": "Column Break",
+                "insert_after": "kf_cbm_price",
+            },
+            {
+                "fieldname": "kf_exchange_rate",
+                "label": "Exchange Rate",
+                "fieldtype": "Float",
+                "precision": "6",
+                "default": "1",
+                "insert_after": "kf_price_column",
+                "description": "Freight rate = CBM/Unit Price x Exchange Rate. 1 = no conversion.",
+            },
+            {
                 "fieldname": "kf_cargo_load",
                 "label": "Cargo Load",
                 "fieldtype": "Link",

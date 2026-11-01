@@ -15,15 +15,25 @@ frappe.ui.form.on("Cargo Load", {
 		if (frm.is_new()) return;
 
 		if (frm.doc.sales_invoice) {
-			frm.add_custom_button(__("Sales Invoice"), () => {
+			// The invoice is where the CBM price / exchange rate / payments live.
+			frm.add_custom_button(__("Edit Invoice"), () => {
 				frappe.set_route("Form", "Sales Invoice", frm.doc.sales_invoice);
-			}, __("Open"));
+			}, __("Open")).addClass("btn-primary");
+			frm.add_custom_button(__("Final Invoice (PDF)"), () => {
+				frappe.utils.print("Sales Invoice", frm.doc.sales_invoice, "Final Invoice");
+			}, __("Print"));
 			frm.add_custom_button(__("Refresh Payment Status"), () => {
 				frm.call("refresh_invoice_status").then((r) => {
 					frm.reload_doc();
 					frappe.show_alert({ message: __("Status: {0}", [r.message]), indicator: "blue" });
 				});
 			}, __("Open"));
+		}
+
+		if (frm.doc.docstatus === 1 && !frm.doc.sales_invoice) {
+			frm.dashboard.set_headline(
+				__("No invoice yet - press 'Create / Update Invoice' to open one, then price it there.")
+			);
 		}
 
 		if (frm.doc.docstatus === 1 && frm.doc.invoice_status !== "Paid") {

@@ -30,6 +30,12 @@ doctype_list_js = {
     "Sales Invoice": "public/js/sales_invoice_list.js",
 }
 
+# Form script: the freight pricing panel + the actions the Laravel invoice page had
+# (record payment, print final invoice).
+doctype_js = {
+    "Sales Invoice": "public/js/sales_invoice.js",
+}
+
 # ------------------------------------------------------------------------------
 # Installation
 # ------------------------------------------------------------------------------
@@ -125,6 +131,7 @@ doc_events = {
         "before_insert": "kodafreight.freight_events.stamp_customer_tenant",
     },
     "Sales Invoice": {
+        "validate": "kodafreight.freight_events.apply_invoice_pricing",
         "on_update": "kodafreight.freight_events.sync_cargo_load_status",
         "on_submit": "kodafreight.freight_events.sync_cargo_load_status",
         "on_cancel": "kodafreight.freight_events.sync_cargo_load_status",

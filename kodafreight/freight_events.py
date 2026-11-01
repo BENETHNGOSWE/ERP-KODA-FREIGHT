@@ -46,6 +46,37 @@ def sync_on_payment(doc, method=None):
             freight.refresh_load_from_invoice(load_name)
 
 
+def apply_invoice_pricing(doc, method=None):
+    """The Laravel "edit invoice" step, applied to an ERPNext Sales Invoice.
+
+    The clerk types *CBM / Unit Price* and *Exchange Rate* on the invoice; this computes
+    the rate of the freight row(s) so totals, tax and accounting all follow ERPNext's own
+    maths. Nothing is written into the ledger by hand.
+    """
+    from frappe.utils import flt
+
+    from kodafreight.services.freight import FREIGHT_ITEM
+
+    price = flt(doc.get("kf_cbm_price"))
+    fx = flt(doc.get("kf_exchange_rate")) or 1
+    if not price:
+        return
+
+    for row in doc.get("items") or []:
+        if row.get("item_code") != FREIGHT_ITEM:
+            continue
+        row.rate = price * fx
+        row.amount = flt(row.qty) * row.rate
+        row.price_list_rate = row.rate
+
+    # Remember which cargo load produced this invoice, so status flows back.
+    if not doc.get("kf_cargo_load"):
+        for row in doc.get("items") or []:
+            if row.get("kf_cargo_load"):
+                doc.kf_cargo_load = row.kf_cargo_load
+                break
+
+
 def stamp_customer_tenant(doc, method=None):
     """Give every Customer a client, so freight data stays inside its tenant.
 

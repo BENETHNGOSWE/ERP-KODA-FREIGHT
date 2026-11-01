@@ -51,6 +51,22 @@ Invoice               sales invoice, invoice status
 * The rate is *per unit of the selected Unit Type*, so the same form prices CBM, KG or pieces.
   Only a volume unit uses CBM for container utilisation.
 
+## 1c. Where the Laravel "edit invoice" screen went
+
+| Laravel invoice edit page | ERPNext |
+|---|---|
+| Invoice Number / Status | Sales Invoice `name` + `status` |
+| Load Weight Values | the item rows (qty = CBM/kg/pieces) |
+| **CBM Price** | **Sales Invoice → Freight Pricing → CBM / Unit Price** |
+| **Exchange Rate** | **Sales Invoice → Freight Pricing → Exchange Rate** |
+| Amount to Pay (Total + Transport) | `Grand Total` |
+| Total Received / Balance Due | `grand_total - outstanding_amount` / `outstanding_amount` |
+| Record Payment | **Create → Record Payment** (creates a Payment Entry) |
+| Payment History | the invoice's *Connections* / *Payment Ledger* + **Customer Statement** report |
+
+The freight rate on the item row is always `CBM/Unit Price x Exchange Rate`; typing either
+field re-prices the row immediately (client script + server validate hook).
+
 ## 2. The flow as implemented
 
 ```
