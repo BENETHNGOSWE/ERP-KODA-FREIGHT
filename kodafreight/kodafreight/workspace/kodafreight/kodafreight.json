@@ -428,7 +428,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-11-01 12:00:00.000000",
+ "modified": "2026-11-01 13:00:00.000000",
  "modified_by": "Administrator",
  "module": "Kodafreight",
  "name": "Kodafreight",
@@ -457,6 +457,55 @@
  "roles": [],
  "sequence_id": 1.0,
  "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "New",
+   "label": "Cargo Load",
+   "link_to": "Cargo Load",
+   "type": "DocType"
+  },
+  {
+   "color": "Cyan",
+   "doc_view": "List",
+   "label": "Loads",
+   "link_to": "Cargo Load",
+   "type": "DocType"
+  },
+  {
+   "color": "Purple",
+   "doc_view": "List",
+   "label": "Containers",
+   "link_to": "Container",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Freight Tariff",
+   "link_to": "Freight Tariff",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "New",
+   "label": "Release Order",
+   "link_to": "Release Order",
+   "type": "DocType"
+  },
+  {
+   "color": "Red",
+   "doc_view": "New",
+   "label": "Delivery Order",
+   "link_to": "Delivery Order",
+   "type": "DocType"
+  },
+  {
+   "color": "Yellow",
+   "doc_view": "List",
+   "label": "Customer Statement",
+   "link_to": "Customer Statement",
+   "type": "Report"
+  },
   {
    "color": "Blue",
    "doc_view": "New",

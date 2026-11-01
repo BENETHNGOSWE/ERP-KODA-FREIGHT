@@ -55,6 +55,14 @@ class Container(Document):
                     _("Cargo load {0} belongs to another client.").format(row.cargo_load),
                     frappe.PermissionError,
                 )
+            ocean_mode = frappe.db.get_value("Cargo Load", row.cargo_load, "ocean_mode")
+            if not ocean_mode:
+                frappe.throw(
+                    _(
+                        "Cargo load {0} is not Ocean Mode (air freight) and cannot go into a "
+                        "container."
+                    ).format(row.cargo_load)
+                )
             if load_docstatus != 1:
                 frappe.throw(
                     _("Cargo load {0} must be submitted before it can be loaded.").format(

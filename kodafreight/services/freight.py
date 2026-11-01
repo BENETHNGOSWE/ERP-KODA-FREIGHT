@@ -35,21 +35,60 @@ INVOICE_INVOICED = "Invoiced"
 
 
 # --------------------------------------------------------------------------- volume
+VOLUME_HINTS = ("m3", "cbm", "m³", "cubic", "cube", "volume")
+
+
 def compute_volume(length, width, height):
     """Measured volume in cubic metres (Laravel `LoadPackageHelper::createLoad`)."""
     return flt(length) * flt(width) * flt(height)
 
 
+def is_volume_unit(unit_type=None, symbol=None, uom=None):
+    """True when the unit type counts cubic metres (priced per CBM, like the legacy app)."""
+    for value in (unit_type, symbol, uom):
+        if not value:
+            continue
+        text = str(value).strip().lower()
+        if any(hint in text for hint in VOLUME_HINTS):
+            return True
+    return False
+
+
 def billable_volume(doc):
-    if doc.get("use_manual_volume"):
-        return flt(doc.get("manual_volume"))
-    return compute_volume(doc.get("length"), doc.get("width"), doc.get("height"))
+    """Cubic metres for this load.
+
+    Measurements are OPTIONAL (as in Laravel). The CBM figure is, in order of precedence:
+      1. L x W x H when the operator measured the carton,
+      2. the typed quantity when the unit type is a volume unit,
+      3. zero - which only affects container utilisation, never a silently wrong invoice.
+    """
+    if doc.get("measure_dimensions"):
+        measured = compute_volume(doc.get("length"), doc.get("width"), doc.get("height"))
+        if measured > 0:
+            return measured
+    if doc.get("is_volume_unit"):
+        return flt(doc.get("quantity"))
+    return 0
+
+
+def billable_quantity(doc):
+    """The quantity the rate multiplies - CBM for volume units, else the typed quantity."""
+    if doc.get("is_volume_unit"):
+        return billable_volume(doc)
+    return flt(doc.get("quantity"))
+
+
+def unit_uom(doc):
+    """ERPNext UOM for the invoice row."""
+    if doc.get("is_volume_unit"):
+        return "Cubic Meter"
+    return "Nos"
 
 
 def freight_amount(doc):
-    """Billable CBM x CBM rate x exchange rate."""
-    rate = flt(doc.get("cbm_rate")) * (flt(doc.get("exchange_rate")) or 1)
-    return flt(billable_volume(doc)) * rate
+    """Billable quantity x rate x exchange rate."""
+    rate = flt(doc.get("rate")) * (flt(doc.get("exchange_rate")) or 1)
+    return flt(billable_quantity(doc)) * rate
 
 
 def total_amount(doc):
@@ -60,24 +99,40 @@ def total_amount(doc):
 def is_priced(doc):
     """A load is billable as soon as it produces a non-zero amount.
 
-    Measurements are already mandatory (Cargo Load validation), so this only asks whether
-    any money has been agreed: a CBM rate for the volume, and/or a transport fee.
+    Unmeasured or unquantified loads stay "Pending Pricing" instead of producing a 0.00
+    invoice - the Laravel system happily billed zero.
     """
     return flt(total_amount(doc)) > 0
 
 
 def apply_pricing(doc):
-    """Recompute every derived money/volume field on a Cargo Load in place."""
+    """Recompute every derived volume/quantity/money field on a Cargo Load in place."""
     doc.volume_cbm = compute_volume(doc.get("length"), doc.get("width"), doc.get("height"))
+    doc.is_volume_unit = 1 if is_volume_unit(_unit_symbol(doc)) else 0
     doc.billable_volume = billable_volume(doc)
+    doc.billable_quantity = billable_quantity(doc)
     doc.freight_amount = freight_amount(doc)
     doc.total_amount = total_amount(doc)
     return doc
 
 
+def _unit_symbol(doc):
+    """Unit Type description used to decide whether the unit counts cubic metres."""
+    unit = doc.get("unit_type")
+    if not unit:
+        return None
+    try:
+        row = frappe.db.get_value("Unit Type", unit, ["symbol", "uom", "unit_name"], as_dict=True)
+    except Exception:
+        return unit
+    if not row:
+        return unit
+    return " ".join(str(row.get(key) or "") for key in ("symbol", "uom", "unit_name")) or unit
+
+
 def apply_tariff(doc):
-    """Prefill rates from the client's default Freight Tariff when they are empty."""
-    if flt(doc.get("cbm_rate")):
+    """Prefill the rate from the client's default Freight Tariff when it is empty."""
+    if flt(doc.get("rate")):
         return doc
     tariffs = frappe.get_all(
         "Freight Tariff",
@@ -88,7 +143,7 @@ def apply_tariff(doc):
     )
     if tariffs:
         t = tariffs[0]
-        doc.cbm_rate = flt(t.cbm_rate)
+        doc.rate = flt(t.cbm_rate)
         doc.exchange_rate = flt(t.exchange_rate) or 1
         if not flt(doc.get("transport_fee")):
             doc.transport_fee = flt(t.transport_fee)
@@ -124,15 +179,17 @@ def _require_item(item_code):
 def invoice_rows_for(doc):
     """Sales Invoice item rows for one priced Cargo Load."""
     rows = []
-    volume = flt(billable_volume(doc))
-    rate = flt(doc.get("cbm_rate")) * (flt(doc.get("exchange_rate")) or 1)
-    if volume > 0 and rate > 0:
+    qty = flt(billable_quantity(doc))
+    rate = flt(doc.get("rate")) * (flt(doc.get("exchange_rate")) or 1)
+    if qty > 0 and rate > 0:
         rows.append(
             {
                 "item_code": _require_item(FREIGHT_ITEM),
-                "item_name": _("Freight - {0} CBM").format(flt(volume, 4)),
-                "qty": volume,
-                "uom": "Cubic Meter",
+                "item_name": _("Freight - {0} {1}").format(
+                    flt(qty, 4), "CBM" if doc.get("is_volume_unit") else ""
+                ).strip(),
+                "qty": qty,
+                "uom": unit_uom(doc),
                 "rate": rate,
                 "description": doc.get("description") or _("Freight charges"),
                 "kf_cargo_load": doc.name,

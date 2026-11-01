@@ -666,9 +666,10 @@ from kodafreight.services import freight as freight_service  # noqa: E402
 def _load(**kw):
     base = {
         "doctype": "Cargo Load", "name": "KFL-TEST",
-        "length": 0, "width": 0, "height": 0,
-        "use_manual_volume": 0, "manual_volume": 0,
-        "cbm_rate": 0, "exchange_rate": 1, "transport_fee": 0, "weight": 0,
+        "length": 0, "width": 0, "height": 0, "measure_dimensions": 0,
+        "quantity": 0, "is_volume_unit": 0,
+        "rate": 0, "exchange_rate": 1, "transport_fee": 0, "weight": 0,
+        "ocean_mode": 1,
     }
     base.update(kw)
     return frappe._dict(base)
@@ -678,39 +679,76 @@ def test_cbm_is_length_times_width_times_height():
     eq(freight_service.compute_volume(2, 0.5, 0.3), 0.3, "volume")
 
 
-def test_zero_dimensions_give_zero_volume_and_no_billable_cbm():
-    load = _load()
-    eq(freight_service.billable_volume(load), 0, "billable")
+def test_measurements_are_optional():
+    """A load with no measurements and no quantity is still saved (Pending Pricing)."""
+    load = _load(ocean_mode=1)
+    eq(freight_service.billable_quantity(load), 0, "nothing billable")
+    eq(freight_service.is_priced(load), False, "not priced")
+    eq(freight_service.total_amount(load), 0, "no money invented")
 
 
-def test_manual_volume_overrides_measurements():
-    load = _load(length=2, width=1, height=1, use_manual_volume=1, manual_volume=3.5)
-    eq(freight_service.billable_volume(load), 3.5, "manual wins")
-    eq(freight_service.compute_volume(load.length, load.width, load.height), 2, "measured kept")
+def test_volume_unit_uses_the_typed_quantity_when_nothing_is_measured():
+    load = _load(quantity=2.5, is_volume_unit=1, rate=1000)
+    eq(freight_service.billable_quantity(load), 2.5, "typed CBM is billable")
+    eq(freight_service.freight_amount(load), 2500, "amount")
+
+
+def test_measured_dimensions_win_over_the_typed_quantity():
+    load = _load(measure_dimensions=1, length=2, width=1, height=1,
+                 quantity=99, is_volume_unit=1, rate=1000)
+    eq(freight_service.billable_volume(load), 2, "measured")
+    eq(freight_service.billable_quantity(load), 2, "measured beats typed")
+
+
+def test_measured_dimensions_are_ignored_when_the_box_is_not_ticked():
+    load = _load(measure_dimensions=0, length=2, width=1, height=1, quantity=3,
+                 is_volume_unit=1, rate=10)
+    eq(freight_service.billable_volume(load), 3, "typed quantity used")
+
+
+def test_weight_unit_is_priced_per_kg_not_per_cbm():
+    load = _load(quantity=120, is_volume_unit=0, rate=500)
+    eq(freight_service.billable_quantity(load), 120, "kg")
+    eq(freight_service.freight_amount(load), 60000, "amount")
+    eq(freight_service.unit_uom(load), "Nos", "non volume uom")
+
+
+def test_piece_unit_is_priced_per_piece():
+    load = _load(quantity=8, is_volume_unit=0, rate=250)
+    eq(freight_service.freight_amount(load), 2000, "amount")
+
+
+def test_volume_unit_detection():
+    eq(freight_service.is_volume_unit("CBM"), True, "CBM")
+    eq(freight_service.is_volume_unit(None, "m³"), True, "m3 symbol")
+    eq(freight_service.is_volume_unit("Cubic Meter"), True, "uom name")
+    eq(freight_service.is_volume_unit("KG"), False, "kg")
+    eq(freight_service.is_volume_unit("PCS"), False, "pieces")
+    eq(freight_service.is_volume_unit(None), False, "nothing")
 
 
 def test_freight_amount_reproduces_legacy_invoice_total():
     # Real record INV-20250905-VKHMO: 234 CBM x 2750 rate x 20 exchange = 12,870,000
-    load = _load(use_manual_volume=1, manual_volume=234, cbm_rate=2750, exchange_rate=20)
+    load = _load(quantity=234, is_volume_unit=1, rate=2750, exchange_rate=20)
     eq(freight_service.freight_amount(load), 12_870_000, "freight")
     eq(freight_service.total_amount(load), 12_870_000, "total")
     eq(freight_service.is_priced(load), True, "priced")
 
 
 def test_transport_fee_is_added_to_the_freight_amount():
-    load = _load(use_manual_volume=1, manual_volume=2, cbm_rate=1000, transport_fee=250)
+    load = _load(quantity=2, is_volume_unit=1, rate=1000, transport_fee=250)
     eq(freight_service.freight_amount(load), 2000, "freight")
     eq(freight_service.total_amount(load), 2250, "due = amount + transport")
 
 
 def test_exchange_rate_defaults_to_one_when_blank():
-    load = _load(use_manual_volume=1, manual_volume=3, cbm_rate=1000, exchange_rate=0)
+    load = _load(quantity=3, is_volume_unit=1, rate=1000, exchange_rate=0)
     eq(freight_service.freight_amount(load), 3000, "no fx")
 
 
 def test_load_without_volume_or_rate_is_not_priced():
-    eq(freight_service.is_priced(_load(cbm_rate=2750)), False, "no volume")
-    eq(freight_service.is_priced(_load(use_manual_volume=1, manual_volume=2)), False, "no rate")
+    eq(freight_service.is_priced(_load(rate=2750)), False, "no quantity")
+    eq(freight_service.is_priced(_load(quantity=2, is_volume_unit=1)), False, "no rate")
     eq(freight_service.is_priced(_load(transport_fee=500)), True, "transport alone is billable")
 
 

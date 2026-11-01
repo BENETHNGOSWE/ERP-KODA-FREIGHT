@@ -11,22 +11,25 @@
   "load_no",
   "customer",
   "customer_name",
-  "cargo_col",
+  "details_col",
   "load_type",
   "unit_type",
   "branch",
+  "ocean_mode",
   "description",
   "cargo_photo",
-  "dimensions",
+  "quantity_section",
+  "quantity",
+  "measure_dimensions",
   "length",
   "width",
   "height",
   "volume_cbm",
-  "volume_col",
-  "use_manual_volume",
-  "manual_volume",
+  "quantity_col",
+  "billable_quantity",
   "billable_volume",
   "weight",
+  "is_volume_unit",
   "movement",
   "transport_date",
   "delivery_date",
@@ -35,10 +38,10 @@
   "container",
   "shipment_status",
   "pricing",
-  "cbm_rate",
+  "rate",
   "exchange_rate",
-  "transport_fee",
   "pricing_col",
+  "transport_fee",
   "freight_amount",
   "total_amount",
   "invoicing",
@@ -93,7 +96,7 @@
    "read_only": 1
   },
   {
-   "fieldname": "cargo_col",
+   "fieldname": "details_col",
    "fieldtype": "Column Break"
   },
   {
@@ -115,6 +118,13 @@
    "options": "Branch"
   },
   {
+   "default": "1",
+   "description": "Ocean freight = the cargo travels inside a container. Untick for air freight (no container).",
+   "fieldname": "ocean_mode",
+   "fieldtype": "Check",
+   "label": "Ocean Mode"
+  },
+  {
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Cargo Description"
@@ -125,30 +135,48 @@
    "label": "Cargo Photo"
   },
   {
-   "fieldname": "dimensions",
+   "description": "Fill whichever applies: measure the carton (L x W x H), or just type the quantity for the selected unit type.",
+   "fieldname": "quantity_section",
    "fieldtype": "Section Break",
-   "label": "Measurements"
+   "label": "Quantity / Measurement"
   },
   {
+   "description": "The billable quantity in the selected Unit Type (CBM, KG, pieces ...).",
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Quantity",
+   "precision": "4"
+  },
+  {
+   "description": "Tick to calculate CBM from the carton size instead of typing it.",
+   "fieldname": "measure_dimensions",
+   "fieldtype": "Check",
+   "label": "Measure Dimensions (L x W x H)"
+  },
+  {
+   "depends_on": "measure_dimensions",
    "fieldname": "length",
    "fieldtype": "Float",
    "label": "Length (m)",
    "precision": "4"
   },
   {
+   "depends_on": "measure_dimensions",
    "fieldname": "width",
    "fieldtype": "Float",
    "label": "Width (m)",
    "precision": "4"
   },
   {
+   "depends_on": "measure_dimensions",
    "fieldname": "height",
    "fieldtype": "Float",
    "label": "Height (m)",
    "precision": "4"
   },
   {
-   "description": "Length x Width x Height, computed on save.",
+   "depends_on": "measure_dimensions",
    "fieldname": "volume_cbm",
    "fieldtype": "Float",
    "label": "Measured CBM",
@@ -156,26 +184,22 @@
    "read_only": 1
   },
   {
-   "fieldname": "volume_col",
+   "fieldname": "quantity_col",
    "fieldtype": "Column Break"
   },
   {
-   "description": "Tick when the volume is agreed/typed instead of measured (Laravel allowed a typed `load_volume`).",
-   "fieldname": "use_manual_volume",
-   "fieldtype": "Check",
-   "label": "Use Manual CBM"
-  },
-  {
-   "depends_on": "use_manual_volume",
-   "fieldname": "manual_volume",
-   "fieldtype": "Float",
-   "label": "Manual CBM",
-   "precision": "4"
-  },
-  {
-   "fieldname": "billable_volume",
+   "description": "Quantity x rate = freight amount.",
+   "fieldname": "billable_quantity",
    "fieldtype": "Float",
    "in_list_view": 1,
+   "label": "Billable Quantity",
+   "precision": "4",
+   "read_only": 1
+  },
+  {
+   "description": "Used only for container utilisation.",
+   "fieldname": "billable_volume",
+   "fieldtype": "Float",
    "label": "Billable CBM",
    "precision": "4",
    "read_only": 1
@@ -185,6 +209,13 @@
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Weight (kg)"
+  },
+  {
+   "fieldname": "is_volume_unit",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Volume Unit",
+   "read_only": 1
   },
   {
    "fieldname": "movement",
@@ -234,10 +265,11 @@
    "label": "Pricing"
   },
   {
-   "fieldname": "cbm_rate",
+   "description": "Price per one unit of the selected Unit Type. Freight = billable quantity x rate x exchange rate.",
+   "fieldname": "rate",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "CBM Rate"
+   "label": "Rate (per unit)"
   },
   {
    "default": "1",
@@ -247,13 +279,13 @@
    "precision": "6"
   },
   {
+   "fieldname": "pricing_col",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "transport_fee",
    "fieldtype": "Currency",
    "label": "Transport Fee"
-  },
-  {
-   "fieldname": "pricing_col",
-   "fieldtype": "Column Break"
   },
   {
    "description": "Billable CBM x CBM Rate x Exchange Rate.",
@@ -308,7 +340,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-01 10:00:00.000000",
+ "modified": "2026-11-01 13:00:00.000000",
  "modified_by": "Administrator",
  "module": "Kodafreight",
  "name": "Cargo Load",

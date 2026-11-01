@@ -28,6 +28,26 @@ unchanged; this module adds the cargo → container → invoice → release → 
 
 ---
 
+## 1b. The Cargo Load form
+
+```
+Load Details          customer, load_type, unit_type, branch, Ocean Mode, description, photo
+Quantity / Measurement
+                      quantity            <- labelled with the chosen unit (CBM, KG, pieces)
+                      [ ] Measure Dimensions (L x W x H)   <- optional, computes CBM
+                      billable quantity / billable CBM (read only), weight
+Movement              transport date, delivery date, trucking number, container, status
+Pricing               rate (per unit), exchange rate, transport fee, freight amount, total
+Invoice               sales invoice, invoice status
+```
+
+* **Measurements are optional**, exactly as in the Laravel form. Nothing blocks data entry;
+  a load without a quantity simply stays *Pending Pricing* and cannot be invoiced.
+* **Ocean Mode** decides the shipping channel: ticked = ocean freight (may go into a
+  Container), unticked = air freight (containers are refused).
+* The rate is *per unit of the selected Unit Type*, so the same form prices CBM, KG or pieces.
+  Only a volume unit uses CBM for container utilisation.
+
 ## 2. The flow as implemented
 
 ```

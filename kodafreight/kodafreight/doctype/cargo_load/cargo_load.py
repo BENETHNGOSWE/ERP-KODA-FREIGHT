@@ -25,6 +25,7 @@ class CargoLoad(Document):
         freight.apply_tariff(self)
         freight.apply_pricing(self)
         self._validate_measurements()
+        self._validate_shipping_mode()
         self._validate_dates()
         if not self.load_no:
             self.load_no = self.name
@@ -59,24 +60,42 @@ class CargoLoad(Document):
             )
 
     def _validate_measurements(self):
-        """No silent zero volumes.
+        """Measurements are OPTIONAL, exactly as in the Laravel form.
 
-        The Laravel system accepted blank dimensions and stored `load_volume = 0.00`,
-        which then produced invoices worth 0.00. A load must now be either measurable or
-        explicitly flagged as a manual (agreed) volume.
+        Nothing blocks data entry: a load with no quantity yet simply stays "Pending
+        Pricing" and cannot be invoiced until a quantity and a rate exist. The only hard
+        rules are the ones that would otherwise store nonsense:
+
+          * if the operator ticked "Measure Dimensions", the three sides must be filled
+          * a dimension or quantity can never be negative
         """
-        if self.use_manual_volume:
-            if flt(self.manual_volume) <= 0:
-                frappe.throw(_("Enter the agreed manual CBM, or untick 'Use Manual CBM'."))
-        elif freight.compute_volume(self.length, self.width, self.height) <= 0:
+        if self.measure_dimensions:
+            if freight.compute_volume(self.length, self.width, self.height) <= 0:
+                frappe.throw(
+                    _(
+                        "You ticked 'Measure Dimensions': enter Length, Width and Height in "
+                        "metres (all three), or untick it and type the quantity instead."
+                    )
+                )
+        for fieldname, label in (
+            ("length", _("Length")),
+            ("width", _("Width")),
+            ("height", _("Height")),
+            ("quantity", _("Quantity")),
+            ("weight", _("Weight")),
+        ):
+            if flt(self.get(fieldname)) < 0:
+                frappe.throw(_("{0} cannot be negative.").format(label))
+
+    def _validate_shipping_mode(self):
+        """Ocean freight uses containers; air freight never does."""
+        if not self.ocean_mode and self.container:
             frappe.throw(
                 _(
-                    "Enter Length, Width and Height in metres, or tick 'Use Manual CBM' "
-                    "and type the agreed volume."
+                    "This load is not Ocean Mode, so it cannot be in a container. Tick Ocean "
+                    "Mode first, or remove the container."
                 )
             )
-        if flt(self.weight) < 0:
-            frappe.throw(_("Weight cannot be negative."))
 
     def _validate_dates(self):
         if self.transport_date and self.delivery_date:
