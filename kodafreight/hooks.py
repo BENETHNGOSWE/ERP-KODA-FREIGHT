@@ -58,7 +58,7 @@ role_home_page = {
 # ------------------------------------------------------------------------------
 permission_query_conditions = {
     "Kodafreight Client": "kodafreight.permissions.client_query_conditions",
-    "Kodafreight Branch": "kodafreight.permissions.branch_query",
+    "Branch": "kodafreight.permissions.branch_query_conditions",
     "Kodafreight Sender Name": "kodafreight.permissions.sender_name_query_conditions",
     "Kodafreight SMS Message": "kodafreight.permissions.sms_message_query",
     "Kodafreight SMS Campaign": "kodafreight.permissions.sms_campaign_query",
@@ -72,13 +72,13 @@ permission_query_conditions = {
     "Kodafreight Subscription": "kodafreight.permissions.subscription_query",
     "Kodafreight Audit Log": "kodafreight.permissions.audit_log_query",
     # --- freight ---------------------------------------------------------------
-    "Kodafreight Cargo Load": "kodafreight.permissions.cargo_load_query",
-    "Kodafreight Container": "kodafreight.permissions.container_query",
-    "Kodafreight Freight Tariff": "kodafreight.permissions.freight_tariff_query",
-    "Kodafreight Release Order": "kodafreight.permissions.release_order_query",
-    "Kodafreight Delivery Order": "kodafreight.permissions.delivery_order_query",
-    "Kodafreight Load Type": "kodafreight.permissions.load_type_query",
-    "Kodafreight Unit Type": "kodafreight.permissions.unit_type_query",
+    "Cargo Load": "kodafreight.permissions.cargo_load_query",
+    "Container": "kodafreight.permissions.container_query",
+    "Freight Tariff": "kodafreight.permissions.freight_tariff_query",
+    "Release Order": "kodafreight.permissions.release_order_query",
+    "Delivery Order": "kodafreight.permissions.delivery_order_query",
+    "Load Type": "kodafreight.permissions.load_type_query",
+    "Unit Type": "kodafreight.permissions.unit_type_query",
     # ERPNext documents that now belong to a tenant as well.
     "Customer": "kodafreight.permissions.customer_query_conditions",
     "Sales Invoice": "kodafreight.permissions.sales_invoice_query_conditions",
@@ -86,7 +86,7 @@ permission_query_conditions = {
 
 has_permission = {
     "Kodafreight Client": "kodafreight.permissions.client_has_permission",
-    "Kodafreight Branch": "kodafreight.permissions.has_tenant_permission",
+    "Branch": "kodafreight.permissions.branch_has_permission",
     "Kodafreight Sender Name": "kodafreight.permissions.sender_name_has_permission",
     "Kodafreight SMS Message": "kodafreight.permissions.has_tenant_permission",
     "Kodafreight SMS Campaign": "kodafreight.permissions.has_tenant_permission",
@@ -99,13 +99,13 @@ has_permission = {
     "Kodafreight SMS Number": "kodafreight.permissions.has_tenant_permission",
     "Kodafreight Subscription": "kodafreight.permissions.has_tenant_permission",
     # --- freight ---------------------------------------------------------------
-    "Kodafreight Cargo Load": "kodafreight.permissions.has_tenant_permission",
-    "Kodafreight Container": "kodafreight.permissions.has_tenant_permission",
-    "Kodafreight Freight Tariff": "kodafreight.permissions.has_tenant_permission",
-    "Kodafreight Release Order": "kodafreight.permissions.has_tenant_permission",
-    "Kodafreight Delivery Order": "kodafreight.permissions.has_tenant_permission",
-    "Kodafreight Load Type": "kodafreight.permissions.has_tenant_permission",
-    "Kodafreight Unit Type": "kodafreight.permissions.has_tenant_permission",
+    "Cargo Load": "kodafreight.permissions.has_tenant_permission",
+    "Container": "kodafreight.permissions.has_tenant_permission",
+    "Freight Tariff": "kodafreight.permissions.has_tenant_permission",
+    "Release Order": "kodafreight.permissions.has_tenant_permission",
+    "Delivery Order": "kodafreight.permissions.has_tenant_permission",
+    "Load Type": "kodafreight.permissions.has_tenant_permission",
+    "Unit Type": "kodafreight.permissions.has_tenant_permission",
     "Customer": "kodafreight.permissions.customer_has_permission",
     "Sales Invoice": "kodafreight.permissions.sales_invoice_has_permission",
 }

@@ -1,0 +1,87 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "hash",
+ "creation": "2026-11-01 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "cargo_load",
+  "load_no",
+  "customer",
+  "customer_name",
+  "cbm",
+  "weight",
+  "shipment_status"
+ ],
+ "fields": [
+  {
+   "fieldname": "cargo_load",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Cargo Load",
+   "options": "Cargo Load",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "cargo_load.load_no",
+   "fieldname": "load_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Load No",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "cargo_load.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "cargo_load.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "cargo_load.billable_volume",
+   "fieldname": "cbm",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "CBM (m\u00b3)",
+   "precision": "4",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "cargo_load.weight",
+   "fieldname": "weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Weight (kg)",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "cargo_load.shipment_status",
+   "fieldname": "shipment_status",
+   "fieldtype": "Data",
+   "label": "Load Status",
+   "read_only": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-11-01 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Kodafreight",
+ "name": "Container Load",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

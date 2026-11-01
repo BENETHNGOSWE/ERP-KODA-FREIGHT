@@ -145,6 +145,18 @@ def create_freight_custom_fields():
     from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
     fields = {
+        "Branch": [
+            {
+                "fieldname": "kf_client",
+                "label": "Kodafreight Client",
+                "fieldtype": "Link",
+                "options": "Kodafreight Client",
+                "insert_after": "branch",
+                "in_standard_filter": 1,
+                "search_index": 1,
+                "description": "Tenant that owns this branch. Set automatically on creation.",
+            }
+        ],
         "Customer": [
             {
                 "fieldname": "kf_client",
@@ -162,7 +174,7 @@ def create_freight_custom_fields():
                 "fieldname": "kf_cargo_load",
                 "label": "Cargo Load",
                 "fieldtype": "Link",
-                "options": "Kodafreight Cargo Load",
+                "options": "Cargo Load",
                 "insert_after": "customer_name",
                 "read_only": 1,
                 "no_copy": 1,
@@ -175,7 +187,7 @@ def create_freight_custom_fields():
                 "fieldname": "kf_cargo_load",
                 "label": "Cargo Load",
                 "fieldtype": "Link",
-                "options": "Kodafreight Cargo Load",
+                "options": "Cargo Load",
                 "insert_after": "item_name",
                 "read_only": 1,
                 "hidden": 1,
@@ -197,9 +209,9 @@ def create_freight_reference_data():
         ("Vehicles", "Cars, bikes, auto parts"),
     ]
     for name, description in load_types:
-        if not frappe.db.exists("Kodafreight Load Type", name):
+        if not frappe.db.exists("Load Type", name):
             frappe.get_doc({
-                "doctype": "Kodafreight Load Type",
+                "doctype": "Load Type",
                 "load_type_name": name,
                 "description": description,
                 "enabled": 1,
@@ -207,9 +219,9 @@ def create_freight_reference_data():
 
     unit_types = [("CBM", "m³"), ("KG", "kg"), ("PCS", "pcs")]
     for name, symbol in unit_types:
-        if not frappe.db.exists("Kodafreight Unit Type", name):
+        if not frappe.db.exists("Unit Type", name):
             frappe.get_doc({
-                "doctype": "Kodafreight Unit Type",
+                "doctype": "Unit Type",
                 "unit_name": name,
                 "symbol": symbol,
                 "enabled": 1,

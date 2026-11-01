@@ -19,7 +19,7 @@ class TestFreightBranch(KodafreightTestCase):
 
     def _branch(self, client, code):
         return frappe.get_doc({
-            "doctype": "Kodafreight Branch", "client": client,
+            "doctype": "Branch", "client": client,
             "branch_name": "Branch " + code, "branch_code": code,
         }).insert()
 
@@ -28,15 +28,15 @@ class TestFreightBranch(KodafreightTestCase):
         own, other = self._branch(a, "TESTA"), self._branch(b, "TESTB")
         user = self._make_user(a)
         frappe.set_user(user)
-        names = set(frappe.get_list("Kodafreight Branch", pluck="name"))
+        names = set(frappe.get_list("Branch", pluck="name"))
         self.assertIn(own.name, names)
         self.assertNotIn(other.name, names)
-        self.assertFalse(frappe.has_permission("Kodafreight Branch", "read", doc=other.name))
+        self.assertFalse(frappe.has_permission("Branch", "read", doc=other.name))
 
     def test_client_cannot_create_branch_for_other_client(self):
         a, b = self.clients[CLIENT_A], self.clients[CLIENT_B]
         frappe.set_user(self._make_user(a))
-        doc = frappe.get_doc({"doctype": "Kodafreight Branch", "client": b,
+        doc = frappe.get_doc({"doctype": "Branch", "client": b,
                               "branch_name": "Foreign", "branch_code": "F"})
         with self.assertRaises(frappe.PermissionError):
             doc.insert()

@@ -80,7 +80,7 @@ def apply_tariff(doc):
     if flt(doc.get("cbm_rate")):
         return doc
     tariffs = frappe.get_all(
-        "Kodafreight Freight Tariff",
+        "Freight Tariff",
         filters={"client": doc.get("client"), "enabled": 1},
         fields=["name", "cbm_rate", "currency", "exchange_rate", "transport_fee", "is_default"],
         order_by="is_default desc, modified desc",
@@ -229,12 +229,12 @@ def invoice_status_label(invoice):
 
 def refresh_load_from_invoice(load_name):
     """Push the invoice's payment state back onto the Cargo Load row."""
-    invoice_name = frappe.db.get_value("Kodafreight Cargo Load", load_name, "sales_invoice")
+    invoice_name = frappe.db.get_value("Cargo Load", load_name, "sales_invoice")
     if not invoice_name or not frappe.db.exists("Sales Invoice", invoice_name):
         return
     invoice = frappe.get_doc("Sales Invoice", invoice_name)
     frappe.db.set_value(
-        "Kodafreight Cargo Load",
+        "Cargo Load",
         load_name,
         "invoice_status",
         invoice_status_label(invoice),
@@ -285,7 +285,7 @@ def assert_invoice_paid(invoice_name, allow_partial=False):
 # --------------------------------------------------------------------------- loads
 def loads_for_invoice(invoice_name):
     return frappe.get_all(
-        "Kodafreight Cargo Load",
+        "Cargo Load",
         filters={"sales_invoice": invoice_name, "docstatus": 1},
         pluck="name",
     )
@@ -294,7 +294,7 @@ def loads_for_invoice(invoice_name):
 def set_load_status(load_names, status):
     for name in load_names:
         frappe.db.set_value(
-            "Kodafreight Cargo Load", name, "shipment_status", status, update_modified=False
+            "Cargo Load", name, "shipment_status", status, update_modified=False
         )
 
 
@@ -303,11 +303,11 @@ def loads_in_container(container_name, exclude=None):
     filters = {"container": container_name, "docstatus": 1}
     if exclude:
         filters["name"] = ["!=", exclude]
-    return frappe.get_all("Kodafreight Cargo Load", filters=filters, pluck="name")
+    return frappe.get_all("Cargo Load", filters=filters, pluck="name")
 
 
 def container_of(load_name):
-    return frappe.db.get_value("Kodafreight Cargo Load", load_name, "container")
+    return frappe.db.get_value("Cargo Load", load_name, "container")
 
 
 # --------------------------------------------------------------------------- merging

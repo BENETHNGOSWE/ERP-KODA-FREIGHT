@@ -36,7 +36,7 @@ CORE_DOCTYPES = {
     # ERPNext doctypes the freight module integrates with (required_apps = erpnext).
     "Customer", "Supplier", "Item", "Item Group", "UOM", "Warehouse", "Sales Invoice",
     "Sales Invoice Item", "Payment Entry", "Payment Entry Reference", "Mode of Payment",
-    "Account", "Cost Center", "Letter Head", "Bank Account",
+    "Account", "Cost Center", "Letter Head", "Bank Account", "Branch",
 }
 
 errors = []

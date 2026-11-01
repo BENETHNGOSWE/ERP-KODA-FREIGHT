@@ -17,7 +17,7 @@ def sync_cargo_load_status(doc, method=None):
     if not doc.get("name"):
         return
     loads = frappe.get_all(
-        "Kodafreight Cargo Load",
+        "Cargo Load",
         filters={"sales_invoice": doc.name},
         pluck="name",
     )
@@ -35,7 +35,7 @@ def sync_on_payment(doc, method=None):
             continue
         seen.add(ref.reference_name)
         for load_name in frappe.get_all(
-            "Kodafreight Cargo Load",
+            "Cargo Load",
             filters={"sales_invoice": ref.reference_name},
             pluck="name",
         ):

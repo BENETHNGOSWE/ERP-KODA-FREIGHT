@@ -9,19 +9,19 @@ unchanged; this module adds the cargo → container → invoice → release → 
 
 | Laravel | Kodafreight / ERPNext | Notes |
 |---|---|---|
-| `Loadpackage` | **Kodafreight Cargo Load** | weight, L×W×H, CBM, type, dates, trucking no, photo |
+| `Loadpackage` | **Cargo Load** | weight, L×W×H, CBM, type, dates, trucking no, photo |
 | `LoadPackageHelper::createLoad()` (`load_volume = L×W×H`) | `services/freight.py: compute_volume()` | measured CBM is always shown |
 | typed `load_volume` column | `use_manual_volume` + `manual_volume` | one explicit source of truth (the old code had two that disagreed) |
-| `Container` + `Containerloading` | **Kodafreight Container** + child **Kodafreight Container Load** | capacity/fill % enforced, load can be in one container only |
+| `Container` + `Containerloading` | **Container** + child **Container Load** | capacity/fill % enforced, load can be in one container only |
 | `Invoice` / `invoice_loads` | **Sales Invoice** (+ `kf_cargo_load` custom field) | real ERPNext ledger document |
-| `cbm_price` × `exchange_rate` | `Cargo Load.cbm_rate` × `exchange_rate`, prefilled from **Kodafreight Freight Tariff** | rate lives in one place per client |
+| `cbm_price` × `exchange_rate` | `Cargo Load.cbm_rate` × `exchange_rate`, prefilled from **Freight Tariff** | rate lives in one place per client |
 | `total_amount + total_transportfee` | `freight_amount + transport_fee` → Sales Invoice rows | amount due is unchanged |
 | invoice `status` 0/1/2 typed by a human | `outstanding_amount` from Payment Entry | derived from money, never typed |
 | `InvoicePayment` table | **Payment Entry** (native) | audited, allocated, reversible |
-| Release Order blocked on `status != 1` | **Kodafreight Release Order** refuses to save unless nothing is outstanding | rule moved onto the document, not a print URL |
-| `DeriveryOrder` (driver/phone/vehicle) | **Kodafreight Delivery Order** | same three mandatory fields + paid-invoice gate |
-| `CustomerStatement` (rebuilt report) | **Kodafreight Customer Statement** | Due / Received / Balance from real allocations |
-| CBM Record screen | **Kodafreight CBM Record** | volume + revenue per load |
+| Release Order blocked on `status != 1` | **Release Order** refuses to save unless nothing is outstanding | rule moved onto the document, not a print URL |
+| `DeriveryOrder` (driver/phone/vehicle) | **Delivery Order** | same three mandatory fields + paid-invoice gate |
+| `CustomerStatement` (rebuilt report) | **Customer Statement** | Due / Received / Balance from real allocations |
+| CBM Record screen | **CBM Record** | volume + revenue per load |
 | `InvoiceMerge` (combined PDF) | *Merge / Combined Bill (PDF)* action on the Sales Invoice list | originals untouched |
 | `rolesAllowed` hard-coding | Frappe roles + permissions | no string comparisons |
 | `where('client_id', ...)` in every controller | `permission_query_conditions` + `has_permission` for every freight DocType, plus `Customer` and `Sales Invoice` | one place, cannot be forgotten |
@@ -49,7 +49,7 @@ Release Order (refused unless paid)  ──►  print "Kodafreight Release Order
 Delivery Order (driver / phone / vehicle)  ──►  loads become "Delivered"
 ```
 
-Container is orthogonal: loads are attached to a **Kodafreight Container** before or after
+Container is orthogonal: loads are attached to a **Container** before or after
 invoicing; submitting the container stamps `container` + `shipment_status = In Container`
 on the loads, and capacity is enforced.
 
@@ -100,7 +100,7 @@ bench restart
 
 1. **Company** + Chart of Accounts exist, and **Global Defaults → default company** is set
    (invoicing throws a clear error without it).
-2. Enter a **Kodafreight Freight Tariff** per client (CBM rate, exchange rate, transport fee)
+2. Enter a **Freight Tariff** per client (CBM rate, exchange rate, transport fee)
    so clerks do not retype prices.
 3. Create **Kodafreight Client Users** for the freight staff and give them the matching role.
 4. Set **Kodafreight Client → Branch** records if you use branches.
@@ -114,24 +114,35 @@ Standard print formats shipped with the app (all Jinja, editable in the UI):
 
 | Document | Print format |
 |---|---|
-| Cargo Load | *Kodafreight Cargo Receipt* |
-| Sales Invoice | *Kodafreight Final Invoice* |
-| Release Order | *Kodafreight Release Order* |
-| Delivery Order | *Kodafreight Delivery Order* |
+| Cargo Load | *Cargo Receipt* |
+| Sales Invoice | *Final Invoice* |
+| Release Order | *Release Order* |
+| Delivery Order | *Delivery Order* |
 | Several invoices, one customer | *Merge / Combined Bill (PDF)* list action |
 
 ---
 
-## 5c. Laravel "Settings" menu -> where it lives now
+## 5c. Naming
+
+The freight doctypes carry no `Kodafreight ` prefix - they are **Cargo Load**,
+**Container**, **Container Load**, **Freight Tariff**, **Release Order**,
+**Delivery Order**, **Load Type**, **Unit Type**, plus the reports **Customer Statement**
+and **CBM Record**, all on the workspace *Configuration* / *Freight* cards.
+The SMS module keeps its `Kodafreight SMS ...` names (they are shared with the platform
+side and covered by the existing test suite).
+**Branch, Warehouse and Company are ERPNext's own doctypes**, tenant-scoped with a
+`kf_client` custom field, instead of being re-implemented.
+
+## 5d. Laravel "Settings" menu -> where it lives now
 
 | Laravel setting (company admin) | Kodafreight / ERPNext | Who can edit |
 |---|---|---|
 | Roles | **Role** (Frappe, global list) + per-staff **Kodafreight Client User → User Role** | Platform admin creates roles; client admin assigns the shipped freight roles |
 | Staffs | **Kodafreight Client User** | Client admin (tenant-scoped by permissions) |
-| Branches | **Kodafreight Branch** | Client admin |
-| Units | **Kodafreight Unit Type** (business view) + **UOM** (ERPNext accounting unit) | Client admin |
-| Loads Types | **Kodafreight Load Type** | Client admin |
-| CBM rate / exchange rate (was per-invoice) | **Kodafreight Freight Tariff** | Client admin |
+| Branches | **Branch** (ERPNext native, tenant-scoped by `kf_client`) | Client admin |
+| Units | **Unit Type** + **UOM** (ERPNext accounting unit) | Client admin |
+| Loads Types | **Load Type** | Client admin |
+| CBM rate / exchange rate (was per-invoice) | **Freight Tariff** | Client admin |
 | Payment Information (bank accounts) | **Bank Account** (+ **Mode of Payment**) | Client admin (needs Company + Accounts) |
 | Godown Details | **Warehouse** | Client admin |
 | Invoice Details (letterhead) | **Company** (name, TIN, address, logo) + **Letter Head** | Client admin |

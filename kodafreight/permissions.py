@@ -109,7 +109,6 @@ def sender_name_has_permission(doc, ptype=None, user=None):
 
 
 # -- generated condition callables (referenced from hooks.py) -----------------------
-branch_query = build_query_conditions("Kodafreight Branch")
 sms_message_query = build_query_conditions("Kodafreight SMS Message")
 sms_campaign_query = build_query_conditions("Kodafreight SMS Campaign")
 contact_query = build_query_conditions("Kodafreight Contact")
@@ -149,13 +148,13 @@ def contact_has_permission(doc, ptype=None, user=None):
 # same reason the Laravel `Customer::all()` leaked.
 # ==============================================================================
 
-cargo_load_query = build_query_conditions("Kodafreight Cargo Load")
-container_query = build_query_conditions("Kodafreight Container")
-freight_tariff_query = build_query_conditions("Kodafreight Freight Tariff")
-release_order_query = build_query_conditions("Kodafreight Release Order")
-delivery_order_query = build_query_conditions("Kodafreight Delivery Order")
-load_type_query = build_query_conditions("Kodafreight Load Type")
-unit_type_query = build_query_conditions("Kodafreight Unit Type")
+cargo_load_query = build_query_conditions("Cargo Load")
+container_query = build_query_conditions("Container")
+freight_tariff_query = build_query_conditions("Freight Tariff")
+release_order_query = build_query_conditions("Release Order")
+delivery_order_query = build_query_conditions("Delivery Order")
+load_type_query = build_query_conditions("Load Type")
+unit_type_query = build_query_conditions("Unit Type")
 
 
 def _tenant_customer_filter(alias="`tabCustomer`"):
@@ -163,6 +162,27 @@ def _tenant_customer_filter(alias="`tabCustomer`"):
         f"{alias}.`name` in (select name from `tabCustomer` "
         f"where kf_client = {{client}})"
     )
+
+
+def branch_query_conditions(user=None):
+    """Branches come from ERPNext; the tenant is carried by the `kf_client` field."""
+    user = user or frappe.session.user
+    if is_platform_admin(user):
+        return ""
+    client = get_user_client(user)
+    if not client:
+        return "`tabBranch`.`name` = '__no_branch__'"
+    return f"`tabBranch`.`kf_client` = {frappe.db.escape(client)}"
+
+
+def branch_has_permission(doc, ptype=None, user=None):
+    user = user or frappe.session.user
+    if is_platform_admin(user):
+        return True
+    client = get_user_client(user)
+    if not client:
+        return False
+    return (doc.get("kf_client") if hasattr(doc, "get") else None) == client
 
 
 def customer_query_conditions(user=None):

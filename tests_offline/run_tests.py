@@ -665,7 +665,7 @@ from kodafreight.services import freight as freight_service  # noqa: E402
 
 def _load(**kw):
     base = {
-        "doctype": "Kodafreight Cargo Load", "name": "KFL-TEST",
+        "doctype": "Cargo Load", "name": "KFL-TEST",
         "length": 0, "width": 0, "height": 0,
         "use_manual_volume": 0, "manual_volume": 0,
         "cbm_rate": 0, "exchange_rate": 1, "transport_fee": 0, "weight": 0,
