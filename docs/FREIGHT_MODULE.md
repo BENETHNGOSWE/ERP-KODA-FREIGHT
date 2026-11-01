@@ -225,6 +225,24 @@ With an **Exchange Rate greater than 1**, the item table prints `Unit Price ($)`
 `Total USD ($)` alongside `Amount Due (TZS)`, matching the legacy invoice layout. With
 Rate = 1 the table prints a single currency, with no empty dollar columns.
 
+## 5f. "A field/section is in the code but not in the UI"
+
+Frappe only re-syncs a DocType when the JSON `modified` is newer than the record in the
+database, so a pulled change can silently not appear. Two commands fix it:
+
+```bash
+# reload one doctype immediately (no full migrate)
+bench --site <site> reload-doc kodafreight doctype kodafreight_settings
+
+# or force it from the console
+bench --site <site> console
+>>> import frappe
+>>> frappe.reload_doc("kodafreight", "doctype", "kodafreight_settings", force=True)
+```
+
+`after_migrate` now force-reloads `Kodafreight Settings` on every migrate, because the
+"Invoice Defaults" section was lost to exactly this problem once.
+
 ## 6. Tests
 
 ```bash

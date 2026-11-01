@@ -26,6 +26,23 @@ def after_install():
     print("Kodafreight installed.")
 
 
+def ensure_settings_schema():
+    """Force Kodafreight Settings to match the shipped JSON.
+
+    Frappe only re-syncs a DocType when the JSON `modified` is newer than the record in the
+    database. That silently skipped a whole section once ("Invoice Defaults" existed in code
+    but not in the UI), so the Single is force-reloaded on every migrate - a Single has no
+    data risk and this guarantees new fields appear.
+    """
+    try:
+        frappe.reload_doc("kodafreight", "doctype", "kodafreight_settings", force=True)
+    except Exception:
+        frappe.log_error(
+            title="Kodafreight: could not reload Kodafreight Settings",
+            message=frappe.get_traceback(),
+        )
+
+
 def setup_invoice_naming_series():
     """Give Sales Invoices a freight-looking number (INV-.YYYY.-) instead of ACC-SINV-.
 
@@ -76,6 +93,7 @@ def after_migrate():
     # a failed provisioning step is logged and reported, and the site still migrates.
     safe(create_roles, "create roles")
     safe(create_settings, "create settings")
+    safe(ensure_settings_schema, "settings schema")
     safe(setup_freight, "freight setup")
     frappe.db.commit()
 
