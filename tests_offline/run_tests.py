@@ -753,13 +753,9 @@ def test_exchange_rate_alone_does_not_create_money():
     eq(freight_service.computed_unit_rate(230, 0), 230, "missing fx behaves as 1")
 
 
-def test_invoice_row_rate_is_usd_unit_rate_times_invoice_exchange_rate():
-    """The two stages, end to end.
-
-    Load: 4 kg at 200 USD/kg -> 800 USD.
-    Invoice: exchange rate 2500 -> row rate 500,000 TZS, amount 2,000,000 TZS.
-    """
-    load = _load(quantity=4, is_volume_unit=0, rate=200, exchange_rate=2500)
+def test_invoice_row_starts_unpriced_because_the_invoice_prices_it():
+    """CBM / KG Price is typed on the invoice, so the row must start at 0."""
+    load = _load(quantity=4, is_volume_unit=0)
     original = freight_service._require_item
     freight_service._require_item = lambda code: code
     try:
@@ -767,28 +763,16 @@ def test_invoice_row_rate_is_usd_unit_rate_times_invoice_exchange_rate():
     finally:
         freight_service._require_item = original
     freight = [r for r in rows if r["item_code"] == "Freight Charges"][0]
-    eq(freight["qty"], 4, "quantity")
-    eq(freight["rate"], 500000, "200 USD x 2500")
-    eq(freight_service.freight_amount_usd(load), 800, "stage 1 = 800 USD")
+    eq(freight["qty"], 4, "quantity travels from the load")
+    eq(freight["rate"], 0, "no money inherited from the load")
 
 
-def test_usd_amount_is_known_before_any_exchange_rate():
-    load = _load(quantity=4, is_volume_unit=0, rate=200, exchange_rate=1)
-    eq(freight_service.freight_amount_usd(load), 800, "4 x 200 USD")
-    eq(freight_service.freight_amount(load), 800, "fx 1 leaves it as is")
+def test_cbm_kg_price_times_exchange_rate_is_the_unit_rate():
+    """The Laravel arithmetic: 4 x 200 x 2500 = 2,000,000 TZS."""
+    eq(freight_service.computed_unit_rate(200, 2500), 500000, "rate per unit in TZS")
+    eq(freight_service.computed_unit_rate(200, 2500) * 4, 2_000_000, "invoice amount")
+    eq(freight_service.computed_unit_rate(200, 1), 200, "fx 1 leaves the price")
 
-
-def test_transport_fee_still_travels_with_the_load():
-    load = _load(quantity=2, is_volume_unit=1, transport_fee=25000)
-    original = freight_service._require_item
-    freight_service._require_item = lambda code: code
-    try:
-        rows = freight_service.invoice_rows_for(load)
-    finally:
-        freight_service._require_item = original
-    transport = [r for r in rows if r["item_code"] == "Transport Charges"]
-    eq(len(transport), 1, "transport row present")
-    eq(transport[0]["rate"], 25000, "transport keeps its amount")
 
 
 def test_a_load_can_be_invoiced_with_a_zero_rate():

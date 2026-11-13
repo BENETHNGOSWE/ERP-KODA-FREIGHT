@@ -95,8 +95,8 @@ def computed_unit_rate(price, exchange_rate):
 
 
 def freight_amount_usd(doc):
-    """Stage 1: quantity x Unit Rate (USD) - the amount agreed with the customer."""
-    return flt(billable_quantity(doc)) * flt(doc.get("rate"))
+    """Deprecated alias - the CBM/KG price lives on the invoice now."""
+    return 0.0
 
 
 def freight_amount(doc):
@@ -130,7 +130,6 @@ def apply_pricing(doc):
     doc.is_volume_unit = 1 if is_volume_unit(_unit_symbol(doc)) else 0
     doc.billable_volume = billable_volume(doc)
     doc.billable_quantity = billable_quantity(doc)
-    doc.freight_amount_usd = freight_amount_usd(doc)
     return doc
 
 
@@ -240,8 +239,6 @@ def invoice_rows_for(doc):
     """
     rows = []
     qty = flt(billable_quantity(doc))
-    unit_rate_usd = flt(doc.get("rate"))
-    fx = flt(doc.get("exchange_rate")) or 1
     if qty > 0:
         rows.append(
             {
@@ -249,22 +246,10 @@ def invoice_rows_for(doc):
                 "item_name": _freight_item_name(doc, qty),
                 "qty": qty,
                 "uom": unit_uom(doc),
-                # USD price on the load becomes a TZS rate on the invoice.
-                "rate": unit_rate_usd * fx,
-                "price_list_rate": unit_rate_usd * fx,
+                # Priced on the invoice: CBM / KG Price x Exchange Rate.
+                "rate": 0,
+                "price_list_rate": 0,
                 "description": doc.get("description") or _("Freight charges"),
-                "kf_cargo_load": doc.name,
-            }
-        )
-    if flt(doc.get("transport_fee")) > 0:
-        rows.append(
-            {
-                "item_code": _require_item(TRANSPORT_ITEM),
-                "item_name": _("Transport / trucking"),
-                "qty": 1,
-                "rate": flt(doc.get("transport_fee")),
-                "price_list_rate": flt(doc.get("transport_fee")),
-                "description": doc.get("trucking_number") or _("Transport fee"),
                 "kf_cargo_load": doc.name,
             }
         )
@@ -304,7 +289,7 @@ def sync_sales_invoice(doc, submit=False):
             doc.invoice_status = invoice_status_label(invoice)
             return invoice
         # Draft: rewrite the quantities, but never lose the price typed on the invoice.
-        price = flt(invoice.get("kf_cbm_price")) or flt(doc.get("rate"))
+        price = flt(invoice.get("kf_cbm_price"))
         fx = flt(invoice.get("kf_exchange_rate")) or 1
         fresh_rows = rows
         if price:
@@ -345,11 +330,10 @@ def sync_sales_invoice(doc, submit=False):
         invoice.append("items", row)
     if invoice.meta.has_field("kf_cargo_load"):
         invoice.kf_cargo_load = doc.name
-    if invoice.meta.has_field("kf_cbm_price"):
-        # Stage 1 comes from the load (the agreed USD price per unit).
-        invoice.kf_cbm_price = flt(doc.get("rate"))
-        invoice.kf_exchange_rate = flt(doc.get("exchange_rate")) or 1
-        invoice.kf_amount_usd = flt(billable_quantity(doc)) * flt(unit_rate_usd)
+    # The clerk fills CBM / KG Price and Exchange Rate on the invoice - nothing is
+    # inherited from the load, so no stale number can ever be billed. The tariff is
+    # still available as an optional default for those two fields.
+    apply_tariff_to_invoice(invoice)
     apply_tariff_to_invoice(invoice)
     invoice.flags.ignore_permissions = True
     invoice.insert()

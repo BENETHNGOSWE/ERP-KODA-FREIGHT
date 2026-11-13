@@ -91,7 +91,7 @@ function print_release_order(frm) {
 }
 
 function price_rows(frm) {
-	const price = flt(frm.doc.kf_cbm_price);      // Unit Rate (USD)
+	const price = flt(frm.doc.kf_cbm_price);      // CBM / KG Price
 	const fx = flt(frm.doc.kf_exchange_rate) || 1;
 	const rate = price * fx;                       // TZS per unit
 
@@ -106,7 +106,7 @@ function price_rows(frm) {
 	if (!price) {
 		if (flt(frm.doc.kf_exchange_rate) && flt(frm.doc.kf_exchange_rate) !== 1) {
 			frm.dashboard.set_headline(
-				__("Enter the Unit Rate in USD (e.g. 200) - the exchange rate {0} only converts it.", [fx])
+				__("Enter the CBM / KG Price first (e.g. 200) - the exchange rate {0} only converts it.", [fx])
 			);
 		}
 		return;
@@ -127,7 +127,7 @@ function show_summary(frm) {
 		.filter((r) => r.item_code === "Freight Charges")
 		.reduce((sum, r) => sum + flt(r.qty), 0);
 	frm.dashboard.set_headline(
-		__("USD: {0} x {1} = {2} | TZS: {2} x {3} = {4} | Balance: {5}", [
+		__("Load Weight: {0} | CBM/KG Price {1} x Exch {3} = {2} per unit | Amount {4} | Balance {5}", [
 			qty, format_currency(flt(frm.doc.kf_cbm_price)),
 			format_currency(flt(frm.doc.kf_cbm_price) * qty),
 			fx, format_currency(rate * qty),

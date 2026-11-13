@@ -11,7 +11,7 @@ frappe.ui.form.on("Cargo Load", {
 		// The invoice is created automatically on submit - show it, do not ask for it.
 		if (frm.doc.sales_invoice) {
 			frm.dashboard.set_headline(
-				__("Invoice {0} {1} - open it to enter the CBM/Unit Price and Exchange Rate.", [
+				__("Invoice {0} {1} - open it to enter the CBM / KG Price and Exchange Rate.", [
 					frm.doc.sales_invoice,
 					frm.doc.total_amount ? __("(currently {0})", [format_currency(frm.doc.total_amount)]) : __("(not priced yet)"),
 				])
@@ -87,8 +87,7 @@ frappe.ui.form.on("Cargo Load", {
 	width(frm) { recalc(frm); },
 	height(frm) { recalc(frm); },
 	quantity(frm) { recalc(frm); },
-	rate(frm) { recalc(frm); },
-	transport_fee(frm) { recalc(frm); },
+
 	ocean_mode(frm) {
 		if (!frm.doc.ocean_mode && frm.doc.container) {
 			frappe.msgprint(__("Air freight cannot stay in a container. Clear the Container field."));
@@ -131,6 +130,5 @@ function recalc(frm) {
 	frm.set_value("volume_cbm", flt(measured, 4));
 	frm.set_value("billable_volume", flt(cbm, 4));
 	frm.set_value("billable_quantity", flt(billable_qty, 4));
-	// Stage 1 money known at load time: quantity x Unit Rate (USD)
-	frm.set_value("freight_amount_usd", flt(billable_qty * (d.rate || 0), 2));
+
 }

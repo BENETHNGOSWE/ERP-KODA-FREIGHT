@@ -70,20 +70,24 @@ field re-prices the row immediately (client script + server validate hook).
 ## 1d. The two rates (weight price vs USD exchange)
 
 ```
-STAGE 1 - agreed with the customer, set on the CARGO LOAD
-    Quantity            4 kg            (or CBM / pieces)
-    Unit Rate (USD)     200 USD/kg      -> Freight Amount (USD) 800
-                                        shown on the load, editable, no FX involved
+The CARGO LOAD carries **no money at all** - only the cargo:
 
-STAGE 2 - per invoice, because clients get different rates
-    Exchange Rate       2500 TZS/USD    set on the SALES INVOICE
-                     -> Rate per Unit  200 x 2500 = 500,000 TZS
-                     -> Amount         4 x 500,000 = 2,000,000 TZS
-                     -> Freight Total (USD) 800 also displayed for the client
+    Quantity            4 kg / 2.5 CBM / 8 pieces
+    (weight, dimensions, container, dates, photos)
 
-Nothing is mixed: the load owns the USD price, the invoice owns the exchange rate,
-and both figures are printed on the Final Invoice (Unit Price $ / Total USD $,
-then Amount Due TZS).
+The SALES INVOICE is the Laravel "edit invoice" screen:
+
+    Invoice No           read only
+    Invoice Status       read only (Pending / Partial Paid / Full Paid)
+    Load Weight Value(s) read only, taken from the load      4 Nos
+    CBM / KG Price       INPUT     200
+    Exchange Rate        INPUT     2500
+    Rate per Unit (TZS)  200 x 2500 = 500,000
+    Freight Total (USD)  4 x 200 = 800
+    Items                qty 4 x 500,000 = 2,000,000 TZS
+    Payments Received    table, filled from Payment Entries
+
+Nothing is inherited from the load, so a stale price can never be billed.
 ```
 
 ## 1e. Pricing rules (why the invoice starts at zero)

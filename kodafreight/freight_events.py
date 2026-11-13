@@ -60,11 +60,25 @@ def apply_invoice_pricing(doc, method=None, *args, **kwargs):
     price = flt(doc.get("kf_cbm_price"))       # Unit Rate (USD) per unit
     fx = flt(doc.get("kf_exchange_rate")) or 1
 
-    # Stage 2 display: what one unit costs in TZS, and the whole freight in USD.
-    doc.kf_computed_rate = price * fx
     freight_rows = [row for row in (doc.get("items") or [])
                     if row.get("item_code") == FREIGHT_ITEM]
-    doc.kf_amount_usd = sum(flt(row.get("qty")) for row in freight_rows) * price
+    qty = sum(flt(row.get("qty")) for row in freight_rows)
+    uom = freight_rows[0].get("uom") if freight_rows else ""
+
+    # The three read-only mirrors of the Laravel invoice screen.
+    doc.kf_computed_rate = price * fx
+    doc.kf_amount_usd = qty * price
+    doc.kf_load_weight = "{0:g} {1}".format(qty, uom).strip() if qty else ""
+
+    paid = flt(doc.get("grand_total")) - flt(doc.get("outstanding_amount"))
+    if doc.get("docstatus") == 0:
+        doc.kf_invoice_status = "Draft"
+    elif flt(doc.get("outstanding_amount")) <= 0:
+        doc.kf_invoice_status = "Full Paid"
+    elif paid > 0:
+        doc.kf_invoice_status = "Partial Paid"
+    else:
+        doc.kf_invoice_status = "Pending"
 
     if not price:
         return

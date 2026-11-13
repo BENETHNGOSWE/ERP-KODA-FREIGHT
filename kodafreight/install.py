@@ -246,11 +246,28 @@ def create_freight_custom_fields():
                 "description": "The Laravel invoice form: CBM price and exchange rate. The freight row rate is computed from them.",
             },
             {
+                "fieldname": "kf_invoice_status",
+                "label": "Invoice Status",
+                "fieldtype": "Data",
+                "insert_after": "kf_freight_pricing",
+                "read_only": 1,
+                "in_standard_filter": 1,
+                "description": "Automatic - follows the payments received below.",
+            },
+            {
+                "fieldname": "kf_load_weight",
+                "label": "Load Weight Value(s)",
+                "fieldtype": "Data",
+                "insert_after": "kf_invoice_status",
+                "read_only": 1,
+                "description": "Quantity billed, taken from the cargo load (CBM / KG).",
+            },
+            {
                 "fieldname": "kf_cbm_price",
-                "label": "Unit Rate (USD, per unit)",
+                "label": "CBM / KG Price",
                 "fieldtype": "Currency",
                 "insert_after": "kf_freight_pricing",
-                "description": "USD price per one unit (kg / CBM / piece) - copied from the cargo load, editable here.",
+                "description": "Price per one unit (CBM or KG). This is the number you agree with the customer.",
             },
             {
                 "fieldname": "kf_price_column",
@@ -260,12 +277,12 @@ def create_freight_custom_fields():
             },
             {
                 "fieldname": "kf_exchange_rate",
-                "label": "Exchange Rate (TZS per USD)",
+                "label": "Exchange Rate",
                 "fieldtype": "Float",
                 "precision": "6",
                 "default": "1",
                 "insert_after": "kf_price_column",
-                "description": "Per invoice, because clients have different rates. 1 = no conversion.",
+                "description": "Per invoice, because clients have different exchange rates. 1 = no conversion.",
             },
             {
                 "fieldname": "kf_payments_section",
@@ -372,11 +389,11 @@ def create_freight_custom_fields():
             },
             {
                 "fieldname": "kf_computed_rate",
-                "label": "Rate per Unit (TZS, computed)",
+                "label": "Rate per Unit (TZS)",
                 "fieldtype": "Currency",
                 "insert_after": "kf_rate_column",
                 "read_only": 1,
-                "description": "Unit Rate (USD) x Exchange Rate. This is the rate used on the item row above.",
+                "description": "CBM / KG Price x Exchange Rate. This is the rate used on the item row."
             },
             {
                 "fieldname": "kf_amount_usd",
