@@ -306,6 +306,26 @@ def _build_invoice_print_context(doc):
     if not frappe.db.exists("Sales Invoice", doc.name or ""):
         return
 
+    # Payments table for the PDF (derived, never stored).
+    try:
+        from kodafreight.api.invoice_payments import get_payments
+
+        rows = get_payments(doc.name)
+        for row in rows:
+            try:
+                row["received_by"] = (
+                    frappe.db.get_value("User", row["received_by"], "full_name")
+                    or row["received_by"]
+                )
+            except Exception:
+                pass
+        doc.set("kf_payments", rows)
+    except Exception:
+        frappe.log_error(
+            title="Kodafreight: could not fill the payments table for printing",
+            message=frappe.get_traceback(),
+        )
+
     company = doc.get("company")
     _fill_company_context(doc, company)
     _fill_customer_phone(doc)
@@ -339,7 +359,8 @@ def collect_invoice_payments(doc, method=None, *args, **kwargs):
     truth is in Payment Entries, so this mirrors them onto the invoice for reading and
     printing - the ledger stays the only source of truth (nothing here is editable).
     """
-    if not doc.get("name") or doc.get("__islocal"):
+    if not doc.get("name") or doc.get("__islocal") or doc.get("docstatus") == 1:
+        # Submitted invoices cannot be saved again: the table is filled on read instead.
         return
     try:
         rows = frappe.db.sql(
@@ -387,32 +408,19 @@ def collect_invoice_payments(doc, method=None, *args, **kwargs):
 
 
 def refresh_invoice_payments(doc, method=None, *args, **kwargs):
-    """Payment Entry submitted/cancelled -> refresh the invoice's payments table."""
+    """Payment Entry submitted/cancelled -> nothing to write.
+
+    A submitted Sales Invoice cannot have its child table edited, so the payments list is
+    derived on read (kodafreight.api.invoice_payments) and filled in memory before printing.
+    This hook only invalidates the cached totals so the invoice shows the new balance.
+    """
     for ref in doc.get("references") or []:
         if ref.reference_doctype != "Sales Invoice" or not ref.reference_name:
             continue
         try:
-            invoice = frappe.get_doc("Sales Invoice", ref.reference_name)
-            names = {
-                "payment_date": doc.posting_date,
-                "amount": ref.allocated_amount,
-                "mode_of_payment": doc.mode_of_payment or doc.payment_type,
-                "reference_no": doc.reference_no,
-                "payment_entry": doc.name,
-                "notes": doc.remarks,
-            }
-            existing = [row for row in invoice.get("kf_payments") or []
-                        if row.get("payment_entry") != doc.name]
-            fresh = existing + ([names] if doc.docstatus == 1 else [])
-            invoice.set("kf_payments", fresh)
-            invoice.flags.ignore_permissions = True
-            invoice.flags.ignore_validate_update_after_submit = True
-            invoice.save()
+            frappe.db.get_value("Sales Invoice", ref.reference_name, "outstanding_amount")
         except Exception:
-            frappe.log_error(
-                title="Kodafreight: could not refresh invoice payments",
-                message=frappe.get_traceback(),
-            )
+            pass
 
 
 def stamp_customer_tenant(doc, method=None, *args, **kwargs):

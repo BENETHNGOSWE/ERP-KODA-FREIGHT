@@ -288,6 +288,25 @@ bench --site <site> console
 `after_migrate` now force-reloads `Kodafreight Settings` on every migrate, because the
 "Invoice Defaults" section was lost to exactly this problem once.
 
+## 5g. Recording a payment (and why an unlinked entry shows nothing)
+
+A payment only appears on an invoice if it is **allocated to that invoice**. A Payment Entry
+created with just a customer and an amount allocates nothing, so `outstanding_amount` stays
+the same and the invoice shows "Pending".
+
+Correct ways, both do the same thing:
+
+1. **On the invoice**: `Create → Record Payment`. The button calls ERPNext's
+   `get_payment_entry`, so the invoice reference and the balance are pre-filled. Save, then
+   **Submit** the Payment Entry.
+2. **From Payment Entry**: New → Payment Type `Receive` → Party Type `Customer` → Party →
+   scroll to *Payment References* → **Get Outstanding Invoices** → tick this invoice.
+
+Then, back on the invoice: the **Payments Received** table lists the entry (date, amount,
+method, reference, received by) and **Invoice Status** moves Pending → Partial Paid → Full Paid.
+`Refresh Payments` re-reads it at any time. Nothing is stored on the invoice: the table is
+derived from Payment Entries, so it works even after submission and can never drift.
+
 ## 6. Tests
 
 ```bash
