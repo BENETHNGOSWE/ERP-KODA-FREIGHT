@@ -248,14 +248,12 @@ def create_freight_custom_fields():
                 "print_hide": 1,
                 "search_index": 1,
             },
-            # ---------------------------------------------------- the Laravel invoice form
+            # ----- Freight Pricing sits ABOVE the Items table, always open, no hints ----
             {
                 "fieldname": "kf_freight_pricing",
                 "label": "Freight Pricing",
                 "fieldtype": "Section Break",
-                "insert_after": "items",
-                "collapsible": 0,
-                "description": "CBM / KG Price x Exchange Rate = the rate used on the item row.",
+                "insert_after": "__before_items__",
             },
             {
                 "fieldname": "kf_invoice_status",
@@ -264,7 +262,6 @@ def create_freight_custom_fields():
                 "insert_after": "kf_freight_pricing",
                 "read_only": 1,
                 "in_standard_filter": 1,
-                "description": "Automatic - follows the payments received below.",
             },
             {
                 "fieldname": "kf_load_weight",
@@ -272,7 +269,6 @@ def create_freight_custom_fields():
                 "fieldtype": "Data",
                 "insert_after": "kf_invoice_status",
                 "read_only": 1,
-                "description": "Quantity billed, taken from the cargo load (CBM / KG).",
             },
             {
                 "fieldname": "kf_price_column",
@@ -285,7 +281,6 @@ def create_freight_custom_fields():
                 "label": "CBM / KG Price",
                 "fieldtype": "Currency",
                 "insert_after": "kf_price_column",
-                "description": "Price per one unit (CBM or KG). This is the number you agree with the customer.",
             },
             {
                 "fieldname": "kf_exchange_rate",
@@ -294,7 +289,6 @@ def create_freight_custom_fields():
                 "precision": "6",
                 "default": "1",
                 "insert_after": "kf_cbm_price",
-                "description": "Per invoice, because clients have different exchange rates. 1 = no conversion.",
             },
             {
                 "fieldname": "kf_rate_column2",
@@ -308,7 +302,6 @@ def create_freight_custom_fields():
                 "fieldtype": "Currency",
                 "insert_after": "kf_rate_column2",
                 "read_only": 1,
-                "description": "CBM / KG Price x Exchange Rate. This is the rate used on the item row.",
             },
             {
                 "fieldname": "kf_amount_usd",
@@ -316,16 +309,13 @@ def create_freight_custom_fields():
                 "fieldtype": "Currency",
                 "insert_after": "kf_computed_rate",
                 "read_only": 1,
-                "description": "Quantity x CBM / KG Price, before the exchange rate.",
             },
-            # ---------------------------------------------------- payments
+            # ----- Payments Received sits BELOW the Items table ------------------------
             {
                 "fieldname": "kf_payments_section",
                 "label": "Payments Received",
                 "fieldtype": "Section Break",
-                "insert_after": "kf_amount_usd",
-                "collapsible": 0,
-                "description": "All amounts recorded against this invoice. Use Create -> Record Payment to add one.",
+                "insert_after": "items",
             },
             {
                 "fieldname": "kf_payments",
@@ -335,16 +325,14 @@ def create_freight_custom_fields():
                 "insert_after": "kf_payments_section",
                 "read_only": 1,
                 "no_copy": 1,
-                "in_standard_filter": 1,
             },
-            # ---------------------------------------------------- print context (hidden)
+            # ----- print carrier fields: present on the document, never shown ---------
             {
                 "fieldname": "kf_print_context",
                 "label": "Print Context",
                 "fieldtype": "Section Break",
                 "insert_after": "kf_payments",
-                "collapsible": 1,
-                "collapsed": 1,
+                "hidden": 1,
             },
             {
                 "fieldname": "kf_company_name",
@@ -352,6 +340,7 @@ def create_freight_custom_fields():
                 "fieldtype": "Data",
                 "insert_after": "kf_print_context",
                 "read_only": 1,
+                "hidden": 1,
                 "print_hide": 1,
             },
             {
@@ -360,6 +349,7 @@ def create_freight_custom_fields():
                 "fieldtype": "Data",
                 "insert_after": "kf_company_name",
                 "read_only": 1,
+                "hidden": 1,
                 "print_hide": 1,
             },
             {
@@ -368,6 +358,7 @@ def create_freight_custom_fields():
                 "fieldtype": "Data",
                 "insert_after": "kf_company_phone",
                 "read_only": 1,
+                "hidden": 1,
                 "print_hide": 1,
             },
             {
@@ -376,6 +367,7 @@ def create_freight_custom_fields():
                 "fieldtype": "Data",
                 "insert_after": "kf_company_email",
                 "read_only": 1,
+                "hidden": 1,
                 "print_hide": 1,
             },
             {
@@ -384,6 +376,7 @@ def create_freight_custom_fields():
                 "fieldtype": "Attach Image",
                 "insert_after": "kf_company_tin",
                 "read_only": 1,
+                "hidden": 1,
                 "print_hide": 1,
             },
             {
@@ -392,6 +385,7 @@ def create_freight_custom_fields():
                 "fieldtype": "Small Text",
                 "insert_after": "kf_company_logo",
                 "read_only": 1,
+                "hidden": 1,
                 "print_hide": 1,
             },
             {
@@ -400,6 +394,7 @@ def create_freight_custom_fields():
                 "fieldtype": "Small Text",
                 "insert_after": "kf_company_address",
                 "read_only": 1,
+                "hidden": 1,
                 "print_hide": 1,
             },
             {
@@ -408,6 +403,7 @@ def create_freight_custom_fields():
                 "fieldtype": "Data",
                 "insert_after": "kf_payment_info",
                 "read_only": 1,
+                "hidden": 1,
                 "print_hide": 1,
             },
             {
@@ -416,6 +412,7 @@ def create_freight_custom_fields():
                 "fieldtype": "Data",
                 "insert_after": "kf_prepared_by",
                 "read_only": 1,
+                "hidden": 1,
                 "print_hide": 1,
             },
         ],
@@ -434,6 +431,74 @@ def create_freight_custom_fields():
         ],
     }
     create_custom_fields(fields, ignore_validate=True)
+    sync_custom_fields(fields)
+
+
+def before_items_anchor(doctype):
+    """Field name that sits immediately before the standard Items section.
+
+    `insert_after` is a hard-coded name, but ERPNext renames these section breaks between
+    versions, so the anchor is discovered from the meta instead of guessed.
+    """
+    try:
+        order = [df for df in frappe.get_meta(doctype).get("fields") or [] if df.get("fieldname")]
+    except Exception:
+        order = []
+    index = next((i for i, df in enumerate(order) if df.fieldname == "items"), None)
+    if index:
+        for i in range(index - 1, 0, -1):
+            if order[i].get("fieldtype") == "Section Break":
+                return order[i - 1].fieldname
+    for candidate in ("po_no", "project", "cost_center", "due_date", "customer"):
+        if any(df.fieldname == candidate for df in order):
+            return candidate
+    return "customer"
+
+
+def sync_custom_fields(fields):
+    """Make existing Custom Field records match this definition.
+
+    `create_custom_fields()` silently skips a field that already exists, so a changed
+    label, description or `insert_after` would never reach a site that installed an
+    earlier version - which is exactly how "Invoice Status" ended up inside the payments
+    section. Every migrate now rewrites the properties we own.
+    """
+    text_keys = ("label", "insert_after", "default", "options", "fetch_from")
+    flag_keys = ("collapsible", "collapsed", "hidden", "read_only", "print_hide",
+                 "in_standard_filter", "reqd", "no_copy", "search_index")
+
+    for doctype, definitions in (fields or {}).items():
+        touched = False
+        for definition in definitions:
+            df = dict(definition)
+            if df.get("insert_after") == "__before_items__":
+                df["insert_after"] = before_items_anchor(doctype)
+            name = frappe.db.get_value(
+                "Custom Field", {"dt": doctype, "fieldname": df.get("fieldname")}
+            )
+            if not name:
+                continue
+            doc = frappe.get_doc("Custom Field", name)
+            changed = False
+            for key in text_keys:
+                want = df.get(key) or ""
+                if (doc.get(key) or "") != want:
+                    doc.set(key, want)
+                    changed = True
+            for key in flag_keys:
+                want = 1 if df.get(key) else 0
+                if int(doc.get(key) or 0) != want:
+                    doc.set(key, want)
+                    changed = True
+            if (doc.get("description") or "") != (df.get("description") or ""):
+                doc.set("description", df.get("description") or "")
+                changed = True
+            if changed:
+                doc.flags.ignore_validate = True
+                doc.save(ignore_permissions=True)
+                touched = True
+        if touched:
+            frappe.clear_cache(doctype=doctype)
 
 
 def create_freight_reference_data():

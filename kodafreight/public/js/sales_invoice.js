@@ -131,7 +131,7 @@ function show_summary(frm) {
 		.reduce((sum, r) => sum + flt(r.qty), 0);
 	frm.dashboard.set_headline(
 		__("Rate per unit {0} x {1} = {2} | Amount {3} | Paid {4} | Balance {5}", [
-			format_currency(frm.doc.kf_cbm_price), fx, format_currency(rate),
+			frm.doc.kf_cbm_price, fx, format_currency(rate),
 			format_currency(rate * qty),
 			format_currency(flt(frm.doc.grand_total) - flt(frm.doc.outstanding_amount)),
 			format_currency(frm.doc.outstanding_amount || 0),

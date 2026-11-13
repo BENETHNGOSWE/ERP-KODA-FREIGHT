@@ -75,6 +75,15 @@ The CARGO LOAD carries **no money at all** - only the cargo:
     Quantity            4 kg / 2.5 CBM / 8 pieces
     (weight, dimensions, container, dates, photos)
 
+Order on the form (always open, like the Company section - no collapsible arrows and no
+helper text under the fields):
+
+    Freight Pricing      Invoice Status | Load Weight Value(s)
+                         CBM / KG Price | Exchange Rate
+                         Rate per Unit (TZS) | Freight Total (USD)
+    Items                (ERPNext's own table)
+    Payments Received    (derived from Payment Entries)
+
 The SALES INVOICE is the Laravel "edit invoice" screen:
 
     Invoice No           read only
