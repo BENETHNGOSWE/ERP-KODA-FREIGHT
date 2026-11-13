@@ -36,6 +36,7 @@ def ensure_settings_schema():
     """
     try:
         frappe.reload_doc("kodafreight", "doctype", "payment_account", force=True)
+        frappe.reload_doc("kodafreight", "doctype", "invoice_payment_row", force=True)
         frappe.reload_doc("kodafreight", "doctype", "kodafreight_settings", force=True)
     except Exception:
         frappe.log_error(
@@ -264,6 +265,23 @@ def create_freight_custom_fields():
                 "default": "1",
                 "insert_after": "kf_price_column",
                 "description": "Freight rate = CBM/Unit Price x Exchange Rate. 1 = no conversion.",
+            },
+            {
+                "fieldname": "kf_payments_section",
+                "label": "Payments Received",
+                "fieldtype": "Section Break",
+                "insert_after": "kf_exchange_rate",
+                "collapsible": 1,
+                "description": "Read-only history: amounts recorded against this invoice (Payment Entries).",
+            },
+            {
+                "fieldname": "kf_payments",
+                "label": "",
+                "fieldtype": "Table",
+                "options": "Invoice Payment Row",
+                "insert_after": "kf_payments_section",
+                "read_only": 1,
+                "no_copy": 1,
             },
             {
                 "fieldname": "kf_print_context",

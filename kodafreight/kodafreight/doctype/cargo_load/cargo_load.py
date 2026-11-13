@@ -26,6 +26,7 @@ class CargoLoad(Document):
             # Already invoiced: the invoice owns the money. Just display it.
             freight.pull_pricing_from_invoice(self)
         else:
+            # Only quantities/volume are computed here - never money.
             freight.apply_pricing(self)
         self._validate_measurements()
         self._validate_shipping_mode()

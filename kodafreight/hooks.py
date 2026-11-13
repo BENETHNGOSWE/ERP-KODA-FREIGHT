@@ -131,7 +131,10 @@ doc_events = {
         "before_insert": "kodafreight.freight_events.stamp_customer_tenant",
     },
     "Sales Invoice": {
-        "validate": "kodafreight.freight_events.apply_invoice_pricing",
+        "validate": [
+            "kodafreight.freight_events.apply_invoice_pricing",
+            "kodafreight.freight_events.collect_invoice_payments",
+        ],
         "on_update": "kodafreight.freight_events.sync_cargo_load_status",
         "on_submit": "kodafreight.freight_events.sync_cargo_load_status",
         "on_cancel": "kodafreight.freight_events.sync_cargo_load_status",
@@ -147,8 +150,14 @@ doc_events = {
         "before_print": "kodafreight.freight_events.set_freight_print_context",
     },
     "Payment Entry": {
-        "on_submit": "kodafreight.freight_events.sync_on_payment",
-        "on_cancel": "kodafreight.freight_events.sync_on_payment",
+        "on_submit": [
+            "kodafreight.freight_events.sync_on_payment",
+            "kodafreight.freight_events.refresh_invoice_payments",
+        ],
+        "on_cancel": [
+            "kodafreight.freight_events.sync_on_payment",
+            "kodafreight.freight_events.refresh_invoice_payments",
+        ],
     },
 }
 

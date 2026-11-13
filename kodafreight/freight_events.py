@@ -311,6 +311,89 @@ def _build_invoice_print_context(doc):
                 break
 
 
+def collect_invoice_payments(doc, method=None, *args, **kwargs):
+    """Rebuild the read-only "Payments Received" table on the Sales Invoice.
+
+    The Laravel invoice screen had a payment history table under the invoice. In ERPNext the
+    truth is in Payment Entries, so this mirrors them onto the invoice for reading and
+    printing - the ledger stays the only source of truth (nothing here is editable).
+    """
+    if not doc.get("name") or doc.get("__islocal"):
+        return
+    try:
+        rows = frappe.db.sql(
+            """
+            select pe.name as payment_entry, pe.posting_date as payment_date,
+                   per.allocated_amount as amount,
+                   coalesce(pe.mode_of_payment, pe.payment_type, '') as mode_of_payment,
+                   coalesce(pe.reference_no, '') as reference_no,
+                   coalesce(pe.owner, '') as received_by,
+                   coalesce(pe.remarks, '') as notes
+            from `tabPayment Entry Reference` per
+            inner join `tabPayment Entry` pe on pe.name = per.parent
+            where per.reference_doctype = 'Sales Invoice'
+              and per.reference_name = %s
+              and pe.docstatus = 1
+            order by pe.posting_date asc, pe.name asc
+            """,
+            (doc.name,),
+            as_dict=True,
+        )
+    except Exception:
+        frappe.log_error(
+            title="Kodafreight: could not read invoice payments",
+            message=frappe.get_traceback(),
+        )
+        return
+
+    names = []
+    for row in rows:
+        owner = row.get("received_by") or ""
+        try:
+            owner = frappe.db.get_value("User", owner, "full_name") or owner
+        except Exception:
+            pass
+        names.append({
+            "payment_date": row.get("payment_date"),
+            "amount": row.get("amount"),
+            "mode_of_payment": row.get("mode_of_payment"),
+            "reference_no": row.get("reference_no"),
+            "received_by": owner,
+            "payment_entry": row.get("payment_entry"),
+            "notes": row.get("notes"),
+        })
+    doc.set("kf_payments", names)
+
+
+def refresh_invoice_payments(doc, method=None, *args, **kwargs):
+    """Payment Entry submitted/cancelled -> refresh the invoice's payments table."""
+    for ref in doc.get("references") or []:
+        if ref.reference_doctype != "Sales Invoice" or not ref.reference_name:
+            continue
+        try:
+            invoice = frappe.get_doc("Sales Invoice", ref.reference_name)
+            names = {
+                "payment_date": doc.posting_date,
+                "amount": ref.allocated_amount,
+                "mode_of_payment": doc.mode_of_payment or doc.payment_type,
+                "reference_no": doc.reference_no,
+                "payment_entry": doc.name,
+                "notes": doc.remarks,
+            }
+            existing = [row for row in invoice.get("kf_payments") or []
+                        if row.get("payment_entry") != doc.name]
+            fresh = existing + ([names] if doc.docstatus == 1 else [])
+            invoice.set("kf_payments", fresh)
+            invoice.flags.ignore_permissions = True
+            invoice.flags.ignore_validate_update_after_submit = True
+            invoice.save()
+        except Exception:
+            frappe.log_error(
+                title="Kodafreight: could not refresh invoice payments",
+                message=frappe.get_traceback(),
+            )
+
+
 def stamp_customer_tenant(doc, method=None, *args, **kwargs):
     """Give every Customer a client, so freight data stays inside its tenant.
 

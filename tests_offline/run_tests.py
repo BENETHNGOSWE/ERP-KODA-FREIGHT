@@ -746,6 +746,38 @@ def test_exchange_rate_defaults_to_one_when_blank():
     eq(freight_service.freight_amount(load), 3000, "no fx")
 
 
+def test_invoice_rows_never_take_money_from_the_load():
+    """Regression: a stale 575,000 rate on the load produced a 1,150,000 invoice.
+
+    The freight row must start at 0 no matter what the load has stored; the price is
+    entered on the invoice (CBM/Unit Price x Exchange Rate).
+    """
+    load = _load(quantity=2, is_volume_unit=1, rate=575000, exchange_rate=1)
+    original = freight_service._require_item
+    freight_service._require_item = lambda code: code
+    try:
+        rows = freight_service.invoice_rows_for(load)
+    finally:
+        freight_service._require_item = original
+    freight = [r for r in rows if r["item_code"] == "Freight Charges"]
+    eq(len(freight), 1, "one freight row")
+    eq(freight[0]["rate"], 0, "rate starts at zero")
+    eq(freight[0]["qty"], 2, "quantity still travels")
+
+
+def test_transport_fee_still_travels_with_the_load():
+    load = _load(quantity=2, is_volume_unit=1, transport_fee=25000)
+    original = freight_service._require_item
+    freight_service._require_item = lambda code: code
+    try:
+        rows = freight_service.invoice_rows_for(load)
+    finally:
+        freight_service._require_item = original
+    transport = [r for r in rows if r["item_code"] == "Transport Charges"]
+    eq(len(transport), 1, "transport row present")
+    eq(transport[0]["rate"], 25000, "transport keeps its amount")
+
+
 def test_a_load_can_be_invoiced_with_a_zero_rate():
     """The invoice is opened at load submission; the rate is typed later on it."""
     load = _load(quantity=3, is_volume_unit=1, rate=0)

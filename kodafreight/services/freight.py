@@ -130,8 +130,44 @@ def _unit_symbol(doc):
     return " ".join(str(row.get(key) or "") for key in ("symbol", "uom", "unit_name")) or unit
 
 
+def tariff_for(client):
+    """The client's default Freight Tariff row, or None."""
+    if not client:
+        return None
+    rows = frappe.get_all(
+        "Freight Tariff",
+        filters={"client": client, "enabled": 1},
+        fields=["name", "cbm_rate", "currency", "exchange_rate", "transport_fee", "is_default"],
+        order_by="is_default desc, modified desc",
+        limit=1,
+    )
+    return rows[0] if rows else None
+
+
+def apply_tariff_to_invoice(doc):
+    """Prefill CBM/Unit Price and Exchange Rate on a NEW invoice from the client tariff.
+
+    The tariff is a convenience default for the clerk - it is applied where the money is
+    actually decided (the invoice), never on the cargo load.
+    """
+    if flt(doc.get("kf_cbm_price")):
+        return doc
+
+    client = None
+    if doc.get("kf_cargo_load") and frappe.db.exists("Cargo Load", doc.get("kf_cargo_load")):
+        client = frappe.db.get_value("Cargo Load", doc.get("kf_cargo_load"), "client")
+    if not client and doc.get("customer"):
+        client = frappe.db.get_value("Customer", doc.get("customer"), "kf_client")
+
+    tariff = tariff_for(client)
+    if tariff:
+        doc.kf_cbm_price = flt(tariff.cbm_rate)
+        doc.kf_exchange_rate = flt(tariff.exchange_rate) or 1
+    return doc
+
+
 def apply_tariff(doc):
-    """Prefill the rate from the client's default Freight Tariff when it is empty."""
+    """Deprecated: kept for older callers. Pricing lives on the invoice now."""
     if flt(doc.get("rate")):
         return doc
     tariffs = frappe.get_all(
@@ -179,23 +215,22 @@ def _require_item(item_code):
 def invoice_rows_for(doc):
     """Sales Invoice item rows for one Cargo Load.
 
-    A rate of 0 is allowed on purpose: the invoice is opened as soon as the cargo exists
-    (Laravel `generateInvoice()` did the same), and the CBM/KG rate is typed on the
-    invoice later, when the cargo receipt is done.
+    The freight row is created at **rate 0 on purpose**. Money is agreed on the invoice
+    (the Laravel "update invoice" step), so the load must never price the bill: a stale
+    value stored on the load once produced a 1,150,000 invoice nobody had agreed to.
+    The only exception is a transport fee, which is a known cost and travels with the load.
     """
     rows = []
     qty = flt(billable_quantity(doc))
-    rate = flt(doc.get("rate")) * (flt(doc.get("exchange_rate")) or 1)
     if qty > 0:
         rows.append(
             {
                 "item_code": _require_item(FREIGHT_ITEM),
-                "item_name": _("Freight - {0} {1}").format(
-                    flt(qty, 4), "CBM" if doc.get("is_volume_unit") else ""
-                ).strip(),
+                "item_name": _freight_item_name(doc, qty),
                 "qty": qty,
                 "uom": unit_uom(doc),
-                "rate": rate,
+                "rate": 0,
+                "price_list_rate": 0,
                 "description": doc.get("description") or _("Freight charges"),
                 "kf_cargo_load": doc.name,
             }
@@ -207,11 +242,22 @@ def invoice_rows_for(doc):
                 "item_name": _("Transport / trucking"),
                 "qty": 1,
                 "rate": flt(doc.get("transport_fee")),
+                "price_list_rate": flt(doc.get("transport_fee")),
                 "description": doc.get("trucking_number") or _("Transport fee"),
                 "kf_cargo_load": doc.name,
             }
         )
     return rows
+
+
+def _freight_item_name(doc, qty):
+    unit = ""
+    if doc.get("is_volume_unit"):
+        unit = "m3"
+    elif doc.get("unit_type"):
+        unit = str(doc.get("unit_type"))
+    qty_text = "{:g}".format(round(float(qty or 0), 4))
+    return _("Freight - {0} {1}").format(qty_text, unit).strip()
 
 
 def sync_sales_invoice(doc, submit=False):
@@ -236,7 +282,16 @@ def sync_sales_invoice(doc, submit=False):
         if invoice.docstatus == 1:
             doc.invoice_status = invoice_status_label(invoice)
             return invoice
-        # Draft: rewrite the rows so a re-price is always reflected.
+        # Draft: rewrite the quantities, but never lose the price typed on the invoice.
+        price = flt(invoice.get("kf_cbm_price"))
+        fx = flt(invoice.get("kf_exchange_rate")) or 1
+        fresh_rows = rows
+        if price:
+            for row in fresh_rows:
+                if row["item_code"] == FREIGHT_ITEM:
+                    row["rate"] = price * fx
+                    row["amount"] = flt(row["qty"]) * row["rate"]
+        rows = fresh_rows
         invoice.set("items", [])
         for row in rows:
             invoice.append("items", row)
@@ -258,6 +313,7 @@ def sync_sales_invoice(doc, submit=False):
         invoice.naming_series = series[0]
     invoice.company = default_company()
     invoice.customer = doc.customer
+    invoice.ignore_pricing_rule = 1
     invoice.posting_date = today()
     invoice.due_date = doc.get("delivery_date") or today()
     invoice.set_posting_time = 1
@@ -268,6 +324,7 @@ def sync_sales_invoice(doc, submit=False):
         invoice.append("items", row)
     if invoice.meta.has_field("kf_cargo_load"):
         invoice.kf_cargo_load = doc.name
+    apply_tariff_to_invoice(invoice)
     invoice.flags.ignore_permissions = True
     invoice.insert()
     doc.sales_invoice = invoice.name

@@ -5,52 +5,44 @@
 frappe.ui.form.on("Cargo Load", {
 	refresh(frm) {
 		apply_quantity_label(frm);
-		// Make the "money comes from the invoice" rule obvious on screen.
-		if (frm.doc.sales_invoice && frm.doc.total_amount) {
-			frm.dashboard.set_headline(
-				__("Priced on invoice {0}: {1}", [frm.doc.sales_invoice, format_currency(frm.doc.total_amount)])
-			);
-		}
 
 		if (frm.is_new()) return;
 
+		// The invoice is created automatically on submit - show it, do not ask for it.
 		if (frm.doc.sales_invoice) {
-			// The invoice is where the CBM price / exchange rate / payments live.
-			frm.add_custom_button(__("Edit Invoice"), () => {
+			frm.dashboard.set_headline(
+				__("Invoice {0} {1} - open it to enter the CBM/Unit Price and Exchange Rate.", [
+					frm.doc.sales_invoice,
+					frm.doc.total_amount ? __("(currently {0})", [format_currency(frm.doc.total_amount)]) : __("(not priced yet)"),
+				])
+			);
+			frm.add_custom_button(__("Open Invoice"), () => {
 				frappe.set_route("Form", "Sales Invoice", frm.doc.sales_invoice);
 			}, __("Open")).addClass("btn-primary");
 			frm.add_custom_button(__("Final Invoice (PDF)"), () => {
 				frappe.utils.print("Sales Invoice", frm.doc.sales_invoice, "Final Invoice");
 			}, __("Print"));
+			frm.add_custom_button(__("Record Payment"), () => {
+				frappe.new_doc("Payment Entry", {
+					payment_type: "Receive",
+					party_type: "Customer",
+					party: frm.doc.customer,
+				});
+			}, __("Create"));
 			frm.add_custom_button(__("Refresh Payment Status"), () => {
 				frm.call("refresh_invoice_status").then((r) => {
 					frm.reload_doc();
 					frappe.show_alert({ message: __("Status: {0}", [r.message]), indicator: "blue" });
 				});
 			}, __("Open"));
-		}
-
-		if (frm.doc.docstatus === 1 && !frm.doc.sales_invoice) {
-			frm.dashboard.set_headline(
-				__("No invoice yet - press 'Create / Update Invoice' to open one, then price it there.")
-			);
-		}
-
-		if (frm.doc.docstatus === 1 && frm.doc.invoice_status !== "Paid") {
-			// Opening the invoice never requires money: the rate is typed on the invoice.
-			frm.add_custom_button(__("Create / Update Invoice"), () => {
-				frappe.confirm(
-					__("Open (or create) the Sales Invoice for this load? Type the CBM/KG rate on the invoice itself."),
-					() => {
-						frm.call("make_invoice").then((r) => {
-							frm.reload_doc();
-							if (r.message) {
-								frappe.show_alert({ message: __("Invoice {0} ready", [r.message]), indicator: "green" });
-								frappe.set_route("Form", "Sales Invoice", r.message);
-							}
-						});
-					}
-				);
+		} else if (frm.doc.docstatus === 1) {
+			// Only reachable if invoice creation failed - a deliberate, explicit retry.
+			frm.dashboard.set_headline(__("No invoice was created for this load. Press 'Create Invoice'."));
+			frm.add_custom_button(__("Create Invoice"), () => {
+				frm.call("make_invoice").then((r) => {
+					frm.reload_doc();
+					if (r.message) frappe.set_route("Form", "Sales Invoice", r.message);
+				});
 			}).addClass("btn-primary");
 		}
 
@@ -69,6 +61,19 @@ frappe.ui.form.on("Cargo Load", {
 					client: frm.doc.client,
 				});
 			}, __("Create"));
+		}
+	},
+
+	// After submit, land on the invoice that was just created.
+	on_submit(frm) {
+		if (frm.doc.sales_invoice) {
+			frappe.show_alert({
+				message: __("Invoice {0} created. Enter the CBM/Unit Price and Exchange Rate there.", [
+					frm.doc.sales_invoice,
+				]),
+				indicator: "green",
+			}, 8);
+			frappe.set_route("Form", "Sales Invoice", frm.doc.sales_invoice);
 		}
 	},
 

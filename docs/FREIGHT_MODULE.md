@@ -67,6 +67,28 @@ Invoice               sales invoice, invoice status
 The freight rate on the item row is always `CBM/Unit Price x Exchange Rate`; typing either
 field re-prices the row immediately (client script + server validate hook).
 
+## 1d. Pricing rules (why the invoice starts at zero)
+
+```
+Cargo Load                       Sales Invoice
+──────────                       ─────────────
+submit ──────────────────────►   created automatically, freight row rate = 0
+                                 qty / weight / CBM arrived with the load
+                                 CBM/Unit Price + Exchange Rate typed here
+                                 rate = price x FX, totals recomputed
+                                 Record Payment -> Payment Entry
+                                 "Payments Received" table fills itself
+◄──────────────────────────────  invoice_status + amounts copied back
+```
+
+* The **load never carries money** into the invoice. A stale `rate` left on a load once
+  produced a 1,150,000 invoice nobody had agreed to.
+* **Transport Fee** is the one exception: it is a known cost and travels with the load.
+* The client **Freight Tariff** pre-fills `CBM/Unit Price` + `Exchange Rate` on a new
+  invoice (never on the load).
+* `Payments Received` on the invoice is a read-only mirror of Payment Entries; the ledger
+  stays the source of truth.
+
 ## 2. The flow as implemented
 
 ```
