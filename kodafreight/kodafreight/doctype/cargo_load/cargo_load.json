@@ -42,6 +42,7 @@
   "exchange_rate",
   "pricing_col",
   "transport_fee",
+  "freight_amount_usd",
   "freight_amount",
   "total_amount",
   "invoicing",
@@ -267,25 +268,25 @@
    "read_only": 1
   },
   {
-   "collapsible": 1,
-   "collapsible_depends_on": "eval:doc.sales_invoice",
-   "description": "Read-only: pricing is entered on the invoice, after the cargo receipt. Leave everything empty while creating the load.",
+   "collapsible": 0,
+   "collapsible_depends_on": "",
+   "description": "Unit Rate (USD) is agreed at load time. Exchange rate and TZS amounts come from the invoice.",
    "fieldname": "pricing",
    "fieldtype": "Section Break",
-   "label": "Pricing (from the Sales Invoice)"
+   "label": "Pricing"
   },
   {
-   "description": "Filled on the Sales Invoice (the 'update invoice' step). Read-only here - reopen the load after invoicing to see the figures.",
+   "description": "Price per one unit (kg / CBM / piece) in USD - the price agreed with the customer.",
    "fieldname": "rate",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Rate (per unit)",
-   "no_copy": 1,
-   "read_only": 1
+   "label": "Unit Rate (USD)",
+   "no_copy": 0,
+   "read_only": 0
   },
   {
    "default": "1",
-   "description": "Filled on the Sales Invoice (the 'update invoice' step). Read-only here - reopen the load after invoicing to see the figures.",
+   "description": "Set per invoice (clients have different rates). Copied back here for reference.",
    "fieldname": "exchange_rate",
    "fieldtype": "Float",
    "label": "Exchange Rate",
@@ -303,6 +304,14 @@
    "fieldtype": "Currency",
    "label": "Transport Fee",
    "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "description": "Quantity x Unit Rate (USD).",
+   "fieldname": "freight_amount_usd",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Freight Amount (USD)",
    "read_only": 1
   },
   {
@@ -401,7 +410,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-01 18:30:00.000000",
+ "modified": "2026-12-01 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Kodafreight",
  "name": "Cargo Load",

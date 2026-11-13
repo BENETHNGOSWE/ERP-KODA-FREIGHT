@@ -57,11 +57,15 @@ def apply_invoice_pricing(doc, method=None, *args, **kwargs):
 
     from kodafreight.services.freight import FREIGHT_ITEM
 
-    price = flt(doc.get("kf_cbm_price"))
+    price = flt(doc.get("kf_cbm_price"))       # Unit Rate (USD) per unit
     fx = flt(doc.get("kf_exchange_rate")) or 1
 
-    # Always show the computed rate, even when it is 0 - it is what the item row uses.
-    doc.kf_computed_rate = flt(price) * fx
+    # Stage 2 display: what one unit costs in TZS, and the whole freight in USD.
+    doc.kf_computed_rate = price * fx
+    freight_rows = [row for row in (doc.get("items") or [])
+                    if row.get("item_code") == FREIGHT_ITEM]
+    doc.kf_amount_usd = sum(flt(row.get("qty")) for row in freight_rows) * price
+
     if not price:
         return
 

@@ -88,7 +88,6 @@ frappe.ui.form.on("Cargo Load", {
 	height(frm) { recalc(frm); },
 	quantity(frm) { recalc(frm); },
 	rate(frm) { recalc(frm); },
-	exchange_rate(frm) { recalc(frm); },
 	transport_fee(frm) { recalc(frm); },
 	ocean_mode(frm) {
 		if (!frm.doc.ocean_mode && frm.doc.container) {
@@ -132,4 +131,6 @@ function recalc(frm) {
 	frm.set_value("volume_cbm", flt(measured, 4));
 	frm.set_value("billable_volume", flt(cbm, 4));
 	frm.set_value("billable_quantity", flt(billable_qty, 4));
+	// Stage 1 money known at load time: quantity x Unit Rate (USD)
+	frm.set_value("freight_amount_usd", flt(billable_qty * (d.rate || 0), 2));
 }

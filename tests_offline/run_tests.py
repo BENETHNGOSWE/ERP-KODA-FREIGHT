@@ -753,23 +753,29 @@ def test_exchange_rate_alone_does_not_create_money():
     eq(freight_service.computed_unit_rate(230, 0), 230, "missing fx behaves as 1")
 
 
-def test_invoice_rows_never_take_money_from_the_load():
-    """Regression: a stale 575,000 rate on the load produced a 1,150,000 invoice.
+def test_invoice_row_rate_is_usd_unit_rate_times_invoice_exchange_rate():
+    """The two stages, end to end.
 
-    The freight row must start at 0 no matter what the load has stored; the price is
-    entered on the invoice (CBM/Unit Price x Exchange Rate).
+    Load: 4 kg at 200 USD/kg -> 800 USD.
+    Invoice: exchange rate 2500 -> row rate 500,000 TZS, amount 2,000,000 TZS.
     """
-    load = _load(quantity=2, is_volume_unit=1, rate=575000, exchange_rate=1)
+    load = _load(quantity=4, is_volume_unit=0, rate=200, exchange_rate=2500)
     original = freight_service._require_item
     freight_service._require_item = lambda code: code
     try:
         rows = freight_service.invoice_rows_for(load)
     finally:
         freight_service._require_item = original
-    freight = [r for r in rows if r["item_code"] == "Freight Charges"]
-    eq(len(freight), 1, "one freight row")
-    eq(freight[0]["rate"], 0, "rate starts at zero")
-    eq(freight[0]["qty"], 2, "quantity still travels")
+    freight = [r for r in rows if r["item_code"] == "Freight Charges"][0]
+    eq(freight["qty"], 4, "quantity")
+    eq(freight["rate"], 500000, "200 USD x 2500")
+    eq(freight_service.freight_amount_usd(load), 800, "stage 1 = 800 USD")
+
+
+def test_usd_amount_is_known_before_any_exchange_rate():
+    load = _load(quantity=4, is_volume_unit=0, rate=200, exchange_rate=1)
+    eq(freight_service.freight_amount_usd(load), 800, "4 x 200 USD")
+    eq(freight_service.freight_amount(load), 800, "fx 1 leaves it as is")
 
 
 def test_transport_fee_still_travels_with_the_load():

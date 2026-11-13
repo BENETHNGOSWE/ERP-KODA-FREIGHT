@@ -67,7 +67,26 @@ Invoice               sales invoice, invoice status
 The freight rate on the item row is always `CBM/Unit Price x Exchange Rate`; typing either
 field re-prices the row immediately (client script + server validate hook).
 
-## 1d. Pricing rules (why the invoice starts at zero)
+## 1d. The two rates (weight price vs USD exchange)
+
+```
+STAGE 1 - agreed with the customer, set on the CARGO LOAD
+    Quantity            4 kg            (or CBM / pieces)
+    Unit Rate (USD)     200 USD/kg      -> Freight Amount (USD) 800
+                                        shown on the load, editable, no FX involved
+
+STAGE 2 - per invoice, because clients get different rates
+    Exchange Rate       2500 TZS/USD    set on the SALES INVOICE
+                     -> Rate per Unit  200 x 2500 = 500,000 TZS
+                     -> Amount         4 x 500,000 = 2,000,000 TZS
+                     -> Freight Total (USD) 800 also displayed for the client
+
+Nothing is mixed: the load owns the USD price, the invoice owns the exchange rate,
+and both figures are printed on the Final Invoice (Unit Price $ / Total USD $,
+then Amount Due TZS).
+```
+
+## 1e. Pricing rules (why the invoice starts at zero)
 
 ```
 Cargo Load                       Sales Invoice

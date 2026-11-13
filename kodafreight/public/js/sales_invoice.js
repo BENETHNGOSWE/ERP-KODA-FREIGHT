@@ -91,17 +91,22 @@ function print_release_order(frm) {
 }
 
 function price_rows(frm) {
-	const price = flt(frm.doc.kf_cbm_price);
+	const price = flt(frm.doc.kf_cbm_price);      // Unit Rate (USD)
 	const fx = flt(frm.doc.kf_exchange_rate) || 1;
-	const rate = price * fx;
+	const rate = price * fx;                       // TZS per unit
 
-	// Always show the computed rate, so it is obvious what the item row will use.
+	const qty = (frm.doc.items || [])
+		.filter((r) => r.item_code === "Freight Charges")
+		.reduce((sum, r) => sum + flt(r.qty), 0);
+
+	// Stage 1 (USD) and stage 2 (TZS per unit) both visible, always.
+	frm.set_value("kf_amount_usd", flt(price * qty, 2));
 	frm.set_value("kf_computed_rate", rate);
 
 	if (!price) {
 		if (flt(frm.doc.kf_exchange_rate) && flt(frm.doc.kf_exchange_rate) !== 1) {
 			frm.dashboard.set_headline(
-				__("Exchange Rate {0} multiplies the price: 0 x {0} = 0. Enter CBM / Unit Price (e.g. 230) as well.", [fx])
+				__("Enter the Unit Rate in USD (e.g. 200) - the exchange rate {0} only converts it.", [fx])
 			);
 		}
 		return;
@@ -122,9 +127,10 @@ function show_summary(frm) {
 		.filter((r) => r.item_code === "Freight Charges")
 		.reduce((sum, r) => sum + flt(r.qty), 0);
 	frm.dashboard.set_headline(
-		__("Rate per unit: {0} x {1} = {2} | {3} x {2} = {4} | Balance: {5}", [
-			format_currency(frm.doc.kf_cbm_price), fx, format_currency(rate),
-			qty, format_currency(rate * qty),
+		__("USD: {0} x {1} = {2} | TZS: {2} x {3} = {4} | Balance: {5}", [
+			qty, format_currency(flt(frm.doc.kf_cbm_price)),
+			format_currency(flt(frm.doc.kf_cbm_price) * qty),
+			fx, format_currency(rate * qty),
 			format_currency(frm.doc.outstanding_amount || 0),
 		])
 	);
