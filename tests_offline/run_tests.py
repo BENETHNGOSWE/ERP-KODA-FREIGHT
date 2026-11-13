@@ -746,6 +746,13 @@ def test_exchange_rate_defaults_to_one_when_blank():
     eq(freight_service.freight_amount(load), 3000, "no fx")
 
 
+def test_exchange_rate_alone_does_not_create_money():
+    """Exchange Rate multiplies the price - with price 0 the result is 0 (the real complaint)."""
+    eq(freight_service.computed_unit_rate(0, 240), 0, "0 x 240")
+    eq(freight_service.computed_unit_rate(230, 240), 55200, "price x fx")
+    eq(freight_service.computed_unit_rate(230, 0), 230, "missing fx behaves as 1")
+
+
 def test_invoice_rows_never_take_money_from_the_load():
     """Regression: a stale 575,000 rate on the load produced a 1,150,000 invoice.
 

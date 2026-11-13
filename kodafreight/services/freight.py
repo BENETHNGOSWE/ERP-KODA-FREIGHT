@@ -85,6 +85,15 @@ def unit_uom(doc):
     return "Nos"
 
 
+def computed_unit_rate(price, exchange_rate):
+    """The rate that lands on the freight row: CBM/Unit Price x Exchange Rate.
+
+    Exchange Rate alone changes nothing - it multiplies the price. With price 0 the result
+    is 0, which is why the item row stayed at TZS 0.00 while the rate was filled in.
+    """
+    return flt(price) * (flt(exchange_rate) or 1)
+
+
 def freight_amount(doc):
     """Billable quantity x rate x exchange rate."""
     rate = flt(doc.get("rate")) * (flt(doc.get("exchange_rate")) or 1)

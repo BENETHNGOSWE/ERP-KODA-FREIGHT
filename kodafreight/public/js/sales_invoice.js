@@ -93,21 +93,38 @@ function print_release_order(frm) {
 function price_rows(frm) {
 	const price = flt(frm.doc.kf_cbm_price);
 	const fx = flt(frm.doc.kf_exchange_rate) || 1;
-	if (!price) return;
+	const rate = price * fx;
+
+	// Always show the computed rate, so it is obvious what the item row will use.
+	frm.set_value("kf_computed_rate", rate);
+
+	if (!price) {
+		if (flt(frm.doc.kf_exchange_rate) && flt(frm.doc.kf_exchange_rate) !== 1) {
+			frm.dashboard.set_headline(
+				__("Exchange Rate {0} multiplies the price: 0 x {0} = 0. Enter CBM / Unit Price (e.g. 230) as well.", [fx])
+			);
+		}
+		return;
+	}
+
 	(frm.doc.items || []).forEach((row) => {
 		if (row.item_code !== "Freight Charges") return;
-		frappe.model.set_value(row.doctype, row.name, "rate", price * fx);
+		frappe.model.set_value(row.doctype, row.name, "rate", rate);
 	});
 	show_summary(frm);
 }
 
 function show_summary(frm) {
 	if (!frm.doc.kf_cbm_price) return;
+	const fx = flt(frm.doc.kf_exchange_rate) || 1;
+	const rate = flt(frm.doc.kf_cbm_price) * fx;
+	const qty = (frm.doc.items || [])
+		.filter((r) => r.item_code === "Freight Charges")
+		.reduce((sum, r) => sum + flt(r.qty), 0);
 	frm.dashboard.set_headline(
-		__("Freight: {0} x {1} = {2} per unit | Balance: {3}", [
-			format_currency(frm.doc.kf_cbm_price),
-			flt(frm.doc.kf_exchange_rate) || 1,
-			format_currency(flt(frm.doc.kf_cbm_price) * (flt(frm.doc.kf_exchange_rate) || 1)),
+		__("Rate per unit: {0} x {1} = {2} | {3} x {2} = {4} | Balance: {5}", [
+			format_currency(frm.doc.kf_cbm_price), fx, format_currency(rate),
+			qty, format_currency(rate * qty),
 			format_currency(frm.doc.outstanding_amount || 0),
 		])
 	);

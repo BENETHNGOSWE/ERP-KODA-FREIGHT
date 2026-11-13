@@ -246,10 +246,10 @@ def create_freight_custom_fields():
             },
             {
                 "fieldname": "kf_cbm_price",
-                "label": "CBM / Unit Price",
+                "label": "CBM / Unit Price (input)",
                 "fieldtype": "Currency",
                 "insert_after": "kf_freight_pricing",
-                "description": "Price per unit (CBM, kg, piece) BEFORE the exchange rate.",
+                "description": "Price per unit (CBM, kg, piece). This is the number you agree with the customer.",
             },
             {
                 "fieldname": "kf_price_column",
@@ -259,12 +259,12 @@ def create_freight_custom_fields():
             },
             {
                 "fieldname": "kf_exchange_rate",
-                "label": "Exchange Rate",
+                "label": "Exchange Rate (input)",
                 "fieldtype": "Float",
                 "precision": "6",
                 "default": "1",
                 "insert_after": "kf_price_column",
-                "description": "Freight rate = CBM/Unit Price x Exchange Rate. 1 = no conversion.",
+                "description": "Multiplies the price. 1 = no conversion. It does nothing on its own.",
             },
             {
                 "fieldname": "kf_payments_section",
@@ -362,6 +362,20 @@ def create_freight_custom_fields():
                 "insert_after": "kf_prepared_by",
                 "read_only": 1,
                 "print_hide": 1,
+            },
+            {
+                "fieldname": "kf_rate_column",
+                "label": "",
+                "fieldtype": "Column Break",
+                "insert_after": "kf_exchange_rate",
+            },
+            {
+                "fieldname": "kf_computed_rate",
+                "label": "Rate per Unit (computed)",
+                "fieldtype": "Currency",
+                "insert_after": "kf_rate_column",
+                "read_only": 1,
+                "description": "CBM/Unit Price x Exchange Rate. This is the rate used on the item row above.",
             },
             {
                 "fieldname": "kf_cargo_load",

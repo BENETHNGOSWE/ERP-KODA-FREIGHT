@@ -59,6 +59,9 @@ def apply_invoice_pricing(doc, method=None, *args, **kwargs):
 
     price = flt(doc.get("kf_cbm_price"))
     fx = flt(doc.get("kf_exchange_rate")) or 1
+
+    # Always show the computed rate, even when it is 0 - it is what the item row uses.
+    doc.kf_computed_rate = flt(price) * fx
     if not price:
         return
 
